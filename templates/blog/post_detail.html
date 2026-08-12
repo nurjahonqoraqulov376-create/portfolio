@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load portfolio_extras %}
+
+{% block title %}{{ post|tr:"title" }} — {{ profile.full_name }}{% endblock %}
+{% block description %}{{ post|tr:"excerpt" }}{% endblock %}
+{% block og_title %}{{ post|tr:"title" }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <article class="post-article">
+      <p><a href="{% url 'blog:list' %}">← {{ t.back_to_blog }}</a></p>
+
+      <div class="post-meta">
+        <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"d F Y" }}</time>
+        <span>{{ post.reading_time }} min</span>
+        <span>{{ post.views }} {{ t.views }}</span>
+      </div>
+
+      <h1>{{ post|tr:"title" }}</h1>
+
+      <div class="project-tags">
+        {% for tag in post.tags.all %}
+          <span class="tag tag--dot" style="--tag-color: {{ tag.color }}">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+
+      {% if post.cover %}
+        <img class="card" style="padding:0;overflow:hidden;margin:24px 0"
+             src="{{ post.cover.url }}" alt="{{ post|tr:'title' }}">
+      {% endif %}
+
+      <div class="prose">{{ post|tr_lines:"body" }}</div>
+    </article>
+  </div>
+</section>
+
+{% if related_posts %}
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head"><h2>{{ t.related_posts }}</h2></div>
+    <div class="post-grid">
+      {% for post in related_posts %}
+        {% include "partials/post_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

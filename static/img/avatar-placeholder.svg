@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Avatar">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#151d38"/>
+      <stop offset="1" stop-color="#2a3566"/>
+    </linearGradient>
+    <linearGradient id="fg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ea8fe"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="200" cy="158" r="62" fill="url(#fg)" opacity="0.9"/>
+  <path d="M76 372c0-68 55-118 124-118s124 50 124 118z" fill="url(#fg)" opacity="0.75"/>
+  <text x="200" y="392" font-family="monospace" font-size="20" fill="#9aa6c4" text-anchor="middle">&lt;/&gt;</text>
+</svg>

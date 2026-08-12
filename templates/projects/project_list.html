@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load portfolio_extras %}
+
+{% block title %}{{ t.projects_title }} — {{ profile.full_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-eyebrow">{{ t.projects_subtitle }}</span>
+      <h2>{{ t.projects_title }}</h2>
+    </div>
+
+    {% if technologies %}
+      <div class="filters">
+        <a class="btn btn--sm {% if not active_tech %}btn--primary{% else %}btn--ghost{% endif %}"
+           href="{% url 'projects:list' %}">{{ t.filter_all }}</a>
+        {% for tech in technologies %}
+          <a class="btn btn--sm {% if active_tech == tech.slug %}btn--primary{% else %}btn--ghost{% endif %}"
+             href="?tech={{ tech.slug }}">{{ tech.name }}</a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if projects %}
+      <div class="project-grid">
+        {% for project in projects %}
+          {% include "partials/project_card.html" %}
+        {% endfor %}
+      </div>
+      {% include "partials/pagination.html" %}
+    {% else %}
+      <p>{{ t.no_projects }}</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

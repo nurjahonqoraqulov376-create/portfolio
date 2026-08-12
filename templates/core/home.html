@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static portfolio_extras %}
+
+{% block title %}{{ profile.full_name }} — {{ profile|tr:"headline" }}{% endblock %}
+
+{% block content %}
+
+{# ------------------------------------------------------------------- hero #}
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      {% if profile %}
+        <span class="availability {% if not profile.is_available %}is-off{% endif %}">
+          <span class="dot"></span>
+          {% if profile.is_available %}{{ t.available }}{% else %}{{ t.not_available }}{% endif %}
+        </span>
+      {% endif %}
+
+      <p class="hero-greeting">{{ t.hero_greeting }}</p>
+      <h1><span class="hero-gradient">{{ profile.full_name|default:"Portfolio" }}</span></h1>
+      <p class="hero-headline">{{ profile|tr:"headline" }}</p>
+      <p class="hero-bio">{{ profile|tr:"bio"|truncatewords:34 }}</p>
+
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="{% url 'projects:list' %}">{{ t.view_projects }}</a>
+        <a class="btn btn--ghost" href="#contact">{{ t.contact_me }}</a>
+        {% if profile.resume %}
+          <a class="btn btn--ghost" href="{{ profile.resume.url }}" download>{{ t.download_cv }}</a>
+        {% endif %}
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>{{ stats.projects }}</strong><span>{{ t.nav_projects }}</span></div>
+        <div class="hero-stat"><strong>{{ stats.technologies }}</strong><span>{{ t.tech_used }}</span></div>
+        <div class="hero-stat"><strong>{{ stats.posts }}</strong><span>{{ t.nav_blog }}</span></div>
+      </div>
+    </div>
+
+    <div class="hero-photo">
+      {% if profile.photo %}
+        <img src="{{ profile.photo.url }}" alt="{{ profile.full_name }}">
+      {% else %}
+        <img src="{% static 'img/avatar-placeholder.svg' %}" alt="{{ profile.full_name }}">
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ about #}
+<section class="section section--soft" id="about">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.about_subtitle }}</span>
+      <h2>{{ t.about_title }}</h2>
+    </div>
+    <div class="prose reveal">
+      {{ profile|tr_lines:"bio" }}
+      {% if profile.location_uz %}
+        <p><strong>{{ t.contact_location }}:</strong> {{ profile|tr:"location" }}</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# ----------------------------------------------------------------- skills #}
+{% if skill_categories %}
+<section class="section" id="skills">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.skills_subtitle }}</span>
+      <h2>{{ t.skills_title }}</h2>
+    </div>
+    <div class="skill-grid">
+      {% for category in skill_categories %}
+        <div class="card reveal">
+          <h3 class="skill-cat-title">
+            {% if category.icon %}<span>{{ category.icon }}</span>{% endif %}
+            {{ category|tr:"name" }}
+          </h3>
+          {% for skill in category.skills.all %}
+            <div class="skill-row">
+              <div class="skill-row-head">
+                <span>{{ skill.name }}</span>
+                <span>{{ skill.get_level_display }}</span>
+              </div>
+              <div class="skill-bar"><i data-percent="{{ skill.percent }}"></i></div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ------------------------------------------------------------- experience #}
+{% if experiences %}
+<section class="section section--soft" id="experience">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.experience_subtitle }}</span>
+      <h2>{{ t.experience_title }}</h2>
+    </div>
+    <div class="timeline">
+      {% for item in experiences %}
+        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}">
+          <span class="timeline-period">
+            {{ item.start_date|date:"M Y" }} —
+            {% if item.end_date %}{{ item.end_date|date:"M Y" }}{% else %}{{ t.present }}{% endif %}
+          </span>
+          <h3>{{ item|tr:"role" }}</h3>
+          <p class="timeline-org">
+            {% if item.company_url %}
+              <a href="{{ item.company_url }}" target="_blank" rel="noopener">{{ item.company }}</a>
+            {% else %}{{ item.company }}{% endif %}
+          </p>
+          <div class="timeline-body">{{ item|tr_lines:"description" }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# -------------------------------------------------------------- education #}
+{% if educations %}
+<section class="section" id="education">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.education_subtitle }}</span>
+      <h2>{{ t.education_title }}</h2>
+    </div>
+    <div class="timeline">
+      {% for item in educations %}
+        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}">
+          <span class="timeline-period">
+            {{ item.start_date|date:"M Y" }} —
+            {% if item.end_date %}{{ item.end_date|date:"M Y" }}{% else %}{{ t.present }}{% endif %}
+          </span>
+          <h3>{{ item|tr:"degree" }}</h3>
+          <p class="timeline-org">{{ item|tr:"institution" }}</p>
+          <div class="timeline-body">{{ item|tr_lines:"description" }}</div>
+          {% if item.certificate_url %}
+            <a class="btn btn--ghost btn--sm" href="{{ item.certificate_url }}" target="_blank" rel="noopener">
+              {{ t.view_details }}
+            </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- projects #}
+<section class="section section--soft" id="projects">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.projects_subtitle }}</span>
+      <h2>{{ t.featured_projects }}</h2>
+    </div>
+    {% if featured_projects %}
+      <div class="project-grid">
+        {% for project in featured_projects %}
+          {% include "partials/project_card.html" %}
+        {% endfor %}
+      </div>
+      <p style="margin-top:28px">
+        <a class="btn btn--ghost" href="{% url 'projects:list' %}">{{ t.view_all }} →</a>
+      </p>
+    {% else %}
+      <p>{{ t.no_projects }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{# ------------------------------------------------------------------- blog #}
+{% if latest_posts %}
+<section class="section" id="blog">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.blog_subtitle }}</span>
+      <h2>{{ t.blog_title }}</h2>
+    </div>
+    <div class="post-grid">
+      {% for post in latest_posts %}
+        {% include "partials/post_card.html" %}
+      {% endfor %}
+    </div>
+    <p style="margin-top:28px">
+      <a class="btn btn--ghost" href="{% url 'blog:list' %}">{{ t.view_all }} →</a>
+    </p>
+  </div>
+</section>
+{% endif %}
+
+{# ---------------------------------------------------------------- contact #}
+<section class="section section--soft" id="contact">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">{{ t.contact_subtitle }}</span>
+      <h2>{{ t.contact_title }}</h2>
+    </div>
+
+    <div class="contact-grid">
+      <div class="reveal">
+        <ul class="contact-list">
+          <li>
+            <div>
+              <div class="label">{{ t.contact_email }}</div>
+              <a class="value" href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+            </div>
+          </li>
+          {% if profile.phone %}
+            <li>
+              <div>
+                <div class="label">{{ t.contact_phone }}</div>
+                <a class="value" href="tel:{{ profile.phone }}">{{ profile.phone }}</a>
+              </div>
+            </li>
+          {% endif %}
+          {% if profile.location_uz %}
+            <li>
+              <div>
+                <div class="label">{{ t.contact_location }}</div>
+                <div class="value">{{ profile|tr:"location" }}</div>
+              </div>
+            </li>
+          {% endif %}
+        </ul>
+
+        <div class="project-links">
+          {% for name, url in profile.socials %}
+            <a class="btn btn--ghost btn--sm" href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form class="card reveal" method="post" action="{% url 'core:contact' %}" data-loading>
+        {% csrf_token %}
+        {{ form.honeypot }}
+        {% if form.non_field_errors %}
+          <ul class="form-errors">
+            {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        <div class="form-grid">
+          {% include "partials/form_field.html" with field=form.name %}
+          {% include "partials/form_field.html" with field=form.email %}
+          {% include "partials/form_field.html" with field=form.subject wide=True %}
+          {% include "partials/form_field.html" with field=form.message wide=True %}
+          <div class="form-field form-field--full">
+            <button class="btn btn--primary" type="submit">{{ t.form_send }}</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% comment %}Bitta forma maydoni: yorliq, input va xatolar.{% endcomment %}
+<div class="form-field{% if wide %} form-field--full{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if field.errors %}
+    <ul class="form-errors">
+      {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+</div>

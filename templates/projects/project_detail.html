@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static portfolio_extras %}
+
+{% block title %}{{ project|tr:"title" }} — {{ profile.full_name }}{% endblock %}
+{% block description %}{{ project|tr:"summary" }}{% endblock %}
+{% block og_title %}{{ project|tr:"title" }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <p><a href="{% url 'projects:list' %}">← {{ t.back_to_projects }}</a></p>
+
+    <div class="section-head" style="max-width:760px">
+      <span class="status status--{{ project.status }}">{{ project.status_label }}</span>
+      <h1>{{ project|tr:"title" }}</h1>
+      <p>{{ project|tr:"summary" }}</p>
+    </div>
+
+    {% if project.cover %}
+      <img class="card" style="padding:0;overflow:hidden;margin-bottom:32px"
+           src="{{ project.cover.url }}" alt="{{ project|tr:'title' }}">
+    {% else %}
+      <img class="card" style="padding:0;overflow:hidden;margin-bottom:32px"
+           src="{% static 'img/project-placeholder.svg' %}" alt="">
+    {% endif %}
+
+    <div class="contact-grid">
+      <div class="prose" style="order:2">
+        <h3>{{ t.tech_used }}</h3>
+        <div class="project-tags">
+          {% for tech in project.technologies.all %}
+            <span class="tag tag--dot" style="--tag-color: {{ tech.color }}">{{ tech.name }}</span>
+          {% endfor %}
+        </div>
+
+        {% if project.started_at %}
+          <p><strong>{{ t.started_at }}:</strong> {{ project.started_at|date:"F Y" }}</p>
+        {% endif %}
+
+        <div class="project-links">
+          {% if project.github_url %}
+            <a class="btn btn--primary btn--sm" href="{{ project.github_url }}" target="_blank" rel="noopener">{{ t.source_code }}</a>
+          {% endif %}
+          {% if project.live_url %}
+            <a class="btn btn--ghost btn--sm" href="{{ project.live_url }}" target="_blank" rel="noopener">{{ t.live_demo }}</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="prose" style="order:1">
+        {{ project|tr_lines:"description" }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if related_projects %}
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head"><h2>{{ t.other_projects }}</h2></div>
+    <div class="project-grid">
+      {% for project in related_projects %}
+        {% include "partials/project_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

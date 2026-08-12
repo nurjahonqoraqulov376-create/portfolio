@@ -1,0 +1,16 @@
+{% comment %}
+  `querystring` — Django 5.1+ da o'rnatilgan teg: joriy GET parametrlarni
+  (masalan ?tech=django) saqlab qolib, faqat `page` ni almashtiradi.
+  U natijani "?" bilan qaytaradi.
+{% endcomment %}
+{% if is_paginated %}
+  <nav class="pagination" aria-label="{{ t.page_of }}">
+    {% if page_obj.has_previous %}
+      <a class="btn btn--ghost btn--sm" href="{% querystring page=page_obj.previous_page_number %}">← {{ t.prev }}</a>
+    {% endif %}
+    <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="btn btn--ghost btn--sm" href="{% querystring page=page_obj.next_page_number %}">{{ t.next }} →</a>
+    {% endif %}
+  </nav>
+{% endif %}

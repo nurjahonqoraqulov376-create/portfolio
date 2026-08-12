@@ -1,0 +1,32 @@
+{% load static portfolio_extras %}
+<article class="card project-card reveal">
+  <a class="project-cover" href="{{ project.get_absolute_url }}" aria-hidden="true" tabindex="-1">
+    {% if project.cover %}
+      <img src="{{ project.cover.url }}" alt="" loading="lazy">
+    {% else %}
+      <img src="{% static 'img/project-placeholder.svg' %}" alt="" loading="lazy">
+    {% endif %}
+  </a>
+  <div class="project-body">
+    <div class="post-meta">
+      <span class="status status--{{ project.status }}">{{ project.status_label }}</span>
+      {% if project.started_at %}<span>{{ project.started_at|date:"Y" }}</span>{% endif %}
+    </div>
+    <h3><a href="{{ project.get_absolute_url }}">{{ project|tr:"title" }}</a></h3>
+    <p class="project-summary">{{ project|tr:"summary" }}</p>
+    <div class="project-tags">
+      {% for tech in project.technologies.all %}
+        <span class="tag tag--dot" style="--tag-color: {{ tech.color }}">{{ tech.name }}</span>
+      {% endfor %}
+    </div>
+    <div class="project-links">
+      <a class="btn btn--ghost btn--sm" href="{{ project.get_absolute_url }}">{{ t.view_details }}</a>
+      {% if project.github_url %}
+        <a class="btn btn--ghost btn--sm" href="{{ project.github_url }}" target="_blank" rel="noopener">{{ t.source_code }}</a>
+      {% endif %}
+      {% if project.live_url %}
+        <a class="btn btn--ghost btn--sm" href="{{ project.live_url }}" target="_blank" rel="noopener">{{ t.live_demo }}</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

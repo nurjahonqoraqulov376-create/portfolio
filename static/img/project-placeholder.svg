@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Project">
+  <defs>
+    <linearGradient id="pb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#121a33"/>
+      <stop offset="1" stop-color="#26325c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#pb)"/>
+  <g fill="none" stroke="#6ea8fe" stroke-opacity="0.35" stroke-width="2">
+    <rect x="60" y="70" width="680" height="310" rx="14"/>
+    <line x1="60" y1="120" x2="740" y2="120"/>
+  </g>
+  <g fill="#6ea8fe" opacity="0.6">
+    <circle cx="90" cy="95" r="7"/><circle cx="115" cy="95" r="7"/><circle cx="140" cy="95" r="7"/>
+  </g>
+  <g font-family="monospace" font-size="22" fill="#9aa6c4">
+    <text x="100" y="180">def portfolio():</text>
+    <text x="130" y="215">return "Django"</text>
+  </g>
+  <g fill="#a78bfa" opacity="0.5">
+    <rect x="100" y="250" width="240" height="12" rx="6"/>
+    <rect x="100" y="278" width="380" height="12" rx="6"/>
+    <rect x="100" y="306" width="180" height="12" rx="6"/>
+  </g>
+</svg>

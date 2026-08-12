@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load portfolio_extras %}
+
+{% block title %}{{ t.blog_title }} — {{ profile.full_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-eyebrow">{{ t.blog_subtitle }}</span>
+      <h2>{{ t.blog_title }}</h2>
+    </div>
+
+    {% if posts %}
+      <div class="post-grid">
+        {% for post in posts %}
+          {% include "partials/post_card.html" %}
+        {% endfor %}
+      </div>
+      {% include "partials/pagination.html" %}
+    {% else %}
+      <p>{{ t.no_posts }}</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

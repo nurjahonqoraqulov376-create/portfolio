@@ -1,0 +1,5 @@
+Django>=6.0,<6.1
+Pillow>=12.0          # ImageField uchun
+python-dotenv>=1.0    # .env faylini o'qish
+whitenoise>=6.9       # produksiyada statik fayllar
+gunicorn>=23.0        # produksiya serveri (Linux hosting uchun)

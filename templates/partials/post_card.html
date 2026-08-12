@@ -1,0 +1,16 @@
+{% load portfolio_extras %}
+<article class="card reveal">
+  <div class="post-meta">
+    <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"d M Y" }}</time>
+    <span>{{ post.reading_time }} min</span>
+    <span>{{ post.views }} {{ t.views }}</span>
+  </div>
+  <h3><a href="{{ post.get_absolute_url }}">{{ post|tr:"title" }}</a></h3>
+  <p class="project-summary">{{ post|tr:"excerpt" }}</p>
+  <div class="project-tags">
+    {% for tag in post.tags.all %}
+      <span class="tag tag--dot" style="--tag-color: {{ tag.color }}">{{ tag.name }}</span>
+    {% endfor %}
+  </div>
+  <a class="btn btn--ghost btn--sm" href="{{ post.get_absolute_url }}">{{ t.read_more }}</a>
+</article>

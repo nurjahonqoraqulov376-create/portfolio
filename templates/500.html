@@ -1,0 +1,25 @@
+{% load static %}<!doctype html>
+{% comment %}
+  500 sahifasi mustaqil: base.html ga tayanmaydi va bazaga murojaat qilmaydi,
+  chunki xatolik aynan bazadan kelib chiqqan bo'lishi mumkin.
+{% endcomment %}
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>500 — Serverda xatolik</title>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container error-page">
+    <div>
+      <div class="error-code">500</div>
+      <h1>Serverda xatolik / Server error</h1>
+      <p>Kutilmagan xatolik yuz berdi. Birozdan so'ng urinib ko'ring.<br>
+         Something went wrong. Please try again a bit later.</p>
+      <a class="btn btn--primary" href="/">Bosh sahifa / Home</a>
+    </div>
+  </div>
+</body>
+</html>
