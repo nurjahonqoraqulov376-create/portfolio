@@ -25,3 +25,6 @@ db.sqlite3-journal
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# make_resume --html-only chiqishi
+cv-*.html

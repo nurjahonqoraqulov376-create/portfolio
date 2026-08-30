@@ -34,6 +34,7 @@ UI = {
         "about_subtitle": "Qisqacha tanishuv",
         "skills_title": "Ko'nikmalar",
         "skills_subtitle": "Men ishlatadigan texnologiyalar",
+        "skills_count": "Ko'nikma",
         "experience_title": "Tajriba",
         "experience_subtitle": "Ish va amaliyot yo'lim",
         "education_title": "Ta'lim",
@@ -72,6 +73,10 @@ UI = {
         "form_send": "Yuborish",
         "form_success": "Rahmat! Xabaringiz yuborildi, tez orada javob beraman.",
         "form_error": "Formada xatolik bor, iltimos tekshirib qayta yuboring.",
+        "form_too_many": (
+            "Juda ko'p xabar yubordingiz. Bir ozdan keyin qayta urinib ko'ring "
+            "yoki to'g'ridan-to'g'ri email orqali yozing."
+        ),
         "contact_email": "Email",
         "contact_phone": "Telefon",
         "contact_location": "Manzil",
@@ -115,6 +120,7 @@ UI = {
         "about_subtitle": "A short introduction",
         "skills_title": "Skills",
         "skills_subtitle": "Technologies I work with",
+        "skills_count": "Skills",
         "experience_title": "Experience",
         "experience_subtitle": "My professional path",
         "education_title": "Education",
@@ -153,6 +159,10 @@ UI = {
         "form_send": "Send",
         "form_success": "Thank you! Your message has been sent, I'll reply soon.",
         "form_error": "Please fix the errors below and try again.",
+        "form_too_many": (
+            "You have sent too many messages. Please try again later "
+            "or email me directly."
+        ),
         "contact_email": "Email",
         "contact_phone": "Phone",
         "contact_location": "Location",

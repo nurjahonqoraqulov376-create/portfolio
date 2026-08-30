@@ -29,15 +29,60 @@ def env_list(name, default=""):
     return [item.strip() for item in env(name, default).split(",") if item.strip()]
 
 
+# O'zgaruvchan ma'lumotlar — SQLite bazasi va admin orqali yuklangan media
+# fayllar — shu papkada yashaydi. Railway kabi hostinglarda konteyner diski
+# har deployda tozalanadi, shuning uchun u yerda DATA_DIR doimiy Volume'ga
+# (masalan `/app/data`) qaratiladi. Lokalda bo'sh qoladi -> loyiha papkasi.
+DATA_DIR = Path(env("DATA_DIR") or BASE_DIR)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+
 # ---------------------------------------------------------------- xavfsizlik
 
-SECRET_KEY = env("SECRET_KEY", "dev-only-insecure-key-almashtiring")
-
 DEBUG = env_bool("DEBUG", True)
+
+SECRET_KEY = env("SECRET_KEY")
+
+# `.env` dagi namuna kalitlar. Ular repozitoriyda ochiq turadi, ya'ni ularni
+# bilgan odam sessiya cookie'sini va parol tiklash havolasini o'zi yasay oladi.
+_INSECURE_KEYS = {
+    "dev-only-insecure-key-almashtiring",
+    "dev-l0kal-kalit-almashtiring-produksiyada",
+}
+
+if DEBUG:
+    # Lokal ishlaganda kalit bo'lmasa ham loyiha ishga tushaversin
+    SECRET_KEY = SECRET_KEY or "dev-only-insecure-key-almashtiring"
+elif not SECRET_KEY or SECRET_KEY in _INSECURE_KEYS or len(SECRET_KEY) < 50:
+    # Produksiyada jim o'tib ketmaydi — ataylab yiqiladi.
+    # Yangi kalit:
+    #   python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DEBUG=False bo'lganda kuchli SECRET_KEY majburiy. "
+        "`.env` faylida kamida 50 belgili tasodifiy kalit bering."
+    )
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+
+# Railway har bir servisga `xxx.up.railway.app` domenini beradi va uni shu
+# o'zgaruvchida uzatadi. Qo'lda yozib yurmaslik uchun avtomatik qo'shamiz.
+# O'z domeningizni ALLOWED_HOSTS/CSRF_TRUSTED_ORIGINS orqali qo'shasiz.
+_railway_domain = env("RAILWAY_PUBLIC_DOMAIN")
+if _railway_domain:
+    if _railway_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_railway_domain)
+    if f"https://{_railway_domain}" not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
+
+# Sayt reverse-proxy (nginx, Cloudflare) ortida tursagina yoqing.
+# Yoqilgan bo'lsa mijoz IP'si `X-Forwarded-For` sarlavhasidan olinadi.
+# Proxy bo'lmasa yoqmang: bu sarlavhani istalgan odam o'zi yozib yuborishi
+# mumkin, ya'ni rate limit'ni chetlab o'tish oson bo'lib qoladi.
+TRUST_PROXY_IP = env_bool("TRUST_PROXY_IP", False)
 
 if not DEBUG:
     # Produksiyada HTTPS bilan bog'liq qat'iylashtirish.
@@ -112,7 +157,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DATA_DIR / "db.sqlite3",
     }
 }
 
@@ -157,7 +202,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = DATA_DIR / "media"
+
+# Admin orqali yuklangan rasmlarni produksiyada ham Django o'zi beradi
+# (WhiteNoise buni uddalay olmaydi: u fayl ro'yxatini ishga tushganda bir
+# marta o'qiydi, keyin yuklangan rasm 404 bo'lib qolardi). Kichik portfolio
+# uchun yetarli; S3 kabi tashqi storage ulasangiz SERVE_MEDIA=False qiling.
+SERVE_MEDIA = env_bool("SERVE_MEDIA", True)
 
 STORAGES = {
     "default": {
@@ -176,18 +227,35 @@ STORAGES = {
 
 # ------------------------------------------------------------------- email
 
-# Dev rejimida xatlar terminalga chiqadi — SMTP sozlash shart emas.
-if DEBUG:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
+EMAIL_HOST = env("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(env("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
+# Backend DEBUG'ga emas, login/parol borligiga qarab tanlanadi.
+# Shu tufayli lokal ishlaganda ham haqiqiy xat yuborishni sinab ko'rsa bo'ladi;
+# `.env` da EMAIL_HOST_USER/PASSWORD bo'sh bo'lsa — xat terminalga chiqadi.
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = env("EMAIL_HOST", "smtp.gmail.com")
-    EMAIL_PORT = int(env("EMAIL_PORT", "587"))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "portfolio@example.com")
+
+
+# -------------------------------------------------------------------- kesh
+
+# Rate limit hisoblagichi shu keshda saqlanadi. Standart LocMemCache — jarayon
+# ichida, ya'ni server qayta ishga tushsa hisob nolga qaytadi va bir nechta
+# worker bo'lsa har biri o'z hisobini yuritadi. Bitta jarayonli portfolio uchun
+# yetarli; kelajakda gunicorn bir nechta worker bilan ishlasa Redis'ga o'ting.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "portfolio-cache",
+    }
+}
 
 
 # -------------------------------------------------------------------- turli
@@ -195,6 +263,37 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "portfolio@example.com")
 # Kontakt formasi orqali kelgan xabar haqida shu manzilga ogohlantirish yuboriladi
 CONTACT_NOTIFY_EMAIL = env("CONTACT_NOTIFY_EMAIL")
 
+# Bitta IP soatiga nechta xabar yubora oladi. Bu — spam va "email bombing"
+# himoyasi: har xabar Gmail'ga xat yuboradi, cheklovsiz qoldirib bo'lmaydi.
+CONTACT_RATE_LIMIT = int(env("CONTACT_RATE_LIMIT", "5"))
+CONTACT_RATE_WINDOW = int(env("CONTACT_RATE_WINDOW", "3600"))  # soniya
+
+# Yuklanadigan fayllar uchun chegara (rasm va CV)
+MAX_UPLOAD_SIZE_MB = int(env("MAX_UPLOAD_SIZE_MB", "5"))
+
 SITE_DOMAIN = env("SITE_DOMAIN", "127.0.0.1:8000")
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
+
+# ------------------------------------------------------------------ logging
+
+# Standart holatda `logger.warning`/`exception` konsolga chiqadi, lekin
+# `logger.info` ko'rinmaydi. Xavfsizlik hodisalari (rate limit, xat ketmagani)
+# ko'rinib tursin uchun o'z ilovalarimiz uchun handler beramiz.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {"format": "[{asctime}] {levelname} {name}: {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "simple"},
+    },
+    "loggers": {
+        "core": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "projects": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "blog": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

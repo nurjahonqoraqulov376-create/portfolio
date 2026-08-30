@@ -1,8 +1,24 @@
 """Portfolio egasi haqidagi asosiy modellar."""
 
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from .i18n import TranslatedMixin
+from .translations import choice_label
+
+
+def validate_upload_size(value):
+    """
+    Yuklanadigan fayl hajmini cheklaydi.
+
+    Admin panel ishonchli odam qo'lida bo'lsa ham, tasodifan 200 MB'lik fayl
+    yuklab qo'yish diskni ham, sahifa yuklanishini ham buzadi.
+    """
+    limit_mb = getattr(settings, "MAX_UPLOAD_SIZE_MB", 5)
+    if value.size > limit_mb * 1024 * 1024:
+        raise ValidationError(f"Fayl hajmi {limit_mb} MB dan oshmasligi kerak.")
 
 
 class ProfileManager(models.Manager):
@@ -26,8 +42,18 @@ class Profile(TranslatedMixin):
     location_uz = models.CharField("Manzil (uz)", max_length=120, blank=True)
     location_en = models.CharField("Manzil (en)", max_length=120, blank=True)
 
-    photo = models.ImageField("Rasm", upload_to="profile/", blank=True)
-    resume = models.FileField("CV fayli", upload_to="resume/", blank=True)
+    photo = models.ImageField(
+        "Rasm", upload_to="profile/", blank=True, validators=[validate_upload_size]
+    )
+    # Faqat PDF: `.html` yoki `.svg` yuklansa va media papka veb-server orqali
+    # berilsa, u sizning domeningizda ishlaydigan sahifaga aylanib qoladi.
+    resume = models.FileField(
+        "CV fayli (PDF)",
+        upload_to="resume/",
+        blank=True,
+        validators=[FileExtensionValidator(["pdf"]), validate_upload_size],
+        help_text="Faqat PDF fayl qabul qilinadi.",
+    )
 
     email = models.EmailField("Email")
     phone = models.CharField("Telefon", max_length=32, blank=True)
@@ -81,6 +107,16 @@ class SkillCategory(TranslatedMixin):
 class Skill(models.Model):
     """Bitta texnologiya va uni bilish darajasi."""
 
+    # Admin panel `Level.choices` dagi o'zbekcha yorliqlarni ko'rsatadi,
+    # saytda esa joriy tilga qarab shu lug'atdan olinadi (Project.STATUS_LABELS kabi).
+    LEVEL_LABELS = {
+        1: {"uz": "Boshlang'ich", "en": "Beginner"},
+        2: {"uz": "Asosiy", "en": "Basic"},
+        3: {"uz": "Ishonchli", "en": "Confident"},
+        4: {"uz": "Kuchli", "en": "Strong"},
+        5: {"uz": "Ekspert", "en": "Expert"},
+    }
+
     class Level(models.IntegerChoices):
         BEGINNER = 1, "Boshlang'ich"
         BASIC = 2, "Asosiy"
@@ -107,6 +143,11 @@ class Skill(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_level_display()})"
+
+    @property
+    def level_label(self):
+        """Daraja nomi joriy tilda."""
+        return choice_label(self.LEVEL_LABELS, self.level)
 
     @property
     def percent(self):

@@ -40,7 +40,7 @@ class ProjectAdmin(admin.ModelAdmin):
         ("Sarlavha", {"fields": ["title_uz", "title_en", "slug"]}),
         ("Qisqa tavsif", {"fields": ["summary_uz", "summary_en"]}),
         ("To'liq tavsif", {"fields": ["description_uz", "description_en"]}),
-        ("Media va texnologiyalar", {"fields": ["cover", "technologies"]}),
+        ("Media va texnologiyalar", {"fields": ["cover", "icon", "technologies"]}),
         ("Havolalar", {"fields": ["github_url", "live_url"]}),
         ("Sozlamalar", {"fields": ["status", "is_featured", "started_at", "order"]}),
     ]

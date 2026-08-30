@@ -1,0 +1,260 @@
+{% load portfolio_extras %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<title>{{ profile.full_name }} — CV</title>
+<style>
+  /*
+     Bu shablon ekran uchun emas, QOG'OZ uchun. Shuning uchun saytning
+     style.css fayli ulanmagan: u yerdagi qorong'i mavzu, animatsiya va
+     gradientlar bosmada ishlamaydi.
+  */
+  @page {
+    size: A4;
+    margin: 14mm 15mm;
+  }
+
+  :root {
+    --ink: #16192b;
+    --muted: #5a6280;
+    --line: #d9dee9;
+    --accent: #4f46e5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    font-size: 10.2pt;
+    line-height: 1.5;
+    color: var(--ink);
+    background: #fff;
+  }
+
+  a { color: var(--ink); text-decoration: none; }
+
+  /* ------------------------------------------------------------- sarlavha */
+
+  .head {
+    border-bottom: 2.5px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .name {
+    margin: 0;
+    font-size: 24pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .role {
+    margin: 3px 0 0;
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .contacts {
+    margin-top: 9px;
+    font-size: 9.2pt;
+    color: var(--muted);
+  }
+  .contacts span + span::before {
+    content: "•";
+    margin: 0 7px;
+    color: var(--line);
+  }
+  .open-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 9px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 8.6pt;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* --------------------------------------------------------------- bo'lim */
+
+  .section { margin-bottom: 15px; }
+  .section:last-child { margin-bottom: 0; }
+
+  .section > h2 {
+    margin: 0 0 8px;
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 3px;
+  }
+
+  .summary { margin: 0; color: #2b3048; }
+  .summary p { margin: 0 0 5px; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* ----------------------------------------------------------- ko'nikma */
+
+  /* Uzun ro'yxat ikkinchi qatorga tushganda sarlavha bilan tekis tursin */
+  .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 22px; }
+  .skill-line {
+    break-inside: avoid;
+    padding-left: 1px;
+    text-indent: 0;
+  }
+  .skill-cat {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .skill-cat::after { content: ":"; }
+  .skill-items { color: var(--muted); }
+
+  /* ------------------------------------------------------------ yozuvlar */
+
+  .entry {
+    margin-bottom: 11px;
+    break-inside: avoid;
+  }
+  .entry:last-child { margin-bottom: 0; }
+
+  .entry-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .entry-title {
+    margin: 0;
+    font-size: 11pt;
+    font-weight: 700;
+  }
+  .entry-date {
+    font-size: 8.8pt;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .entry-org {
+    margin: 1px 0 3px;
+    font-size: 9.6pt;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  /* `tr_lines` filtri matnni <p> larga bo'ladi — brauzerning katta
+     standart oralig'i qog'ozda ortiqcha bo'shliq qoldiradi */
+  .entry-body { margin: 0; color: #2b3048; }
+  .entry-body p { margin: 0 0 3px; }
+  .entry-body p:last-child { margin-bottom: 0; }
+  .entry-tech {
+    margin-top: 3px;
+    font-size: 8.8pt;
+    color: var(--muted);
+  }
+  .entry-tech b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="head">
+  <h1 class="name">{{ profile.full_name }}</h1>
+  <p class="role">{{ profile|tr:"headline" }}</p>
+
+  <div class="contacts">
+    {% if profile.email %}<span>{{ profile.email }}</span>{% endif %}
+    {% if profile.phone %}<span>{{ profile.phone }}</span>{% endif %}
+    {% if profile.location_uz %}<span>{{ profile|tr:"location" }}</span>{% endif %}
+    {% if profile.github %}<span>{{ profile.github|cut:"https://" }}</span>{% endif %}
+    {% if profile.telegram %}<span>{{ profile.telegram|cut:"https://" }}</span>{% endif %}
+  </div>
+
+  {% if profile.is_available %}
+    <span class="open-badge">{{ t.available }}</span>
+  {% endif %}
+</header>
+
+{% if profile.bio_uz %}
+<section class="section">
+  <h2>{{ t.about_title }}</h2>
+  <div class="summary">{{ profile|tr_lines:"bio" }}</div>
+</section>
+{% endif %}
+
+{% if skill_categories %}
+<section class="section">
+  <h2>{{ t.skills_title }}</h2>
+  <div class="skills">
+    {% for category in skill_categories %}
+      {% if category.skills.all %}
+        <div class="skill-line">
+          <span class="skill-cat">{{ category|tr:"name" }}</span>
+          <span class="skill-items">{% for skill in category.skills.all %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if experiences %}
+<section class="section">
+  <h2>{{ t.experience_title }}</h2>
+  {% for item in experiences %}
+    <div class="entry">
+      <div class="entry-top">
+        <h3 class="entry-title">{{ item|tr:"role" }}</h3>
+        <span class="entry-date">
+          {{ item.start_date|date:"m.Y" }} — {% if item.end_date %}{{ item.end_date|date:"m.Y" }}{% else %}{{ t.present }}{% endif %}
+        </span>
+      </div>
+      <p class="entry-org">{{ item.company }}</p>
+      <div class="entry-body">{{ item|tr_lines:"description" }}</div>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if projects %}
+<section class="section">
+  <h2>{{ t.projects_title }}</h2>
+  {% for project in projects %}
+    <div class="entry">
+      <div class="entry-top">
+        <h3 class="entry-title">{{ project|tr:"title" }}</h3>
+        {% if project.started_at %}<span class="entry-date">{{ project.started_at|date:"Y" }}</span>{% endif %}
+      </div>
+      <p class="entry-body">{{ project|tr:"summary" }}</p>
+      {% if project.technologies.all %}
+        <p class="entry-tech">
+          <b>{{ t.tech_used }}:</b>
+          {% for tech in project.technologies.all %}{{ tech.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </p>
+      {% endif %}
+      {% if project.github_url %}
+        <p class="entry-tech">{{ project.github_url|cut:"https://" }}</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if educations %}
+<section class="section">
+  <h2>{{ t.education_title }}</h2>
+  {% for item in educations %}
+    <div class="entry">
+      <div class="entry-top">
+        <h3 class="entry-title">{{ item|tr:"degree" }}</h3>
+        <span class="entry-date">
+          {{ item.start_date|date:"m.Y" }} — {% if item.end_date %}{{ item.end_date|date:"m.Y" }}{% else %}{{ t.present }}{% endif %}
+        </span>
+      </div>
+      <p class="entry-org">{{ item|tr:"institution" }}</p>
+      <div class="entry-body">{{ item|tr_lines:"description" }}</div>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+</body>
+</html>

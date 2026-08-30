@@ -1,0 +1,19 @@
+# `railway up` bu fayllarni serverga yubormaydi.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Maxfiy sozlamalar — Railway'da Variables bo'limidan beriladi
+.env
+
+# Lokal baza va rasmlar — serverda Volume ichidagilari ishlatiladi
+/db.sqlite3
+/db.sqlite3-journal
+/media/
+/staticfiles/
+
+.git/
+.vscode/
+.idea/
+cv-*.html

@@ -7,21 +7,29 @@
 
 {# ------------------------------------------------------------------- hero #}
 <section class="hero">
+  {# Blur qilingan suzuvchi sharlar — faqat bezak, o'quvchiga ko'rinmasin #}
+  <div class="orbs" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+  </div>
+
   <div class="container hero-inner">
     <div>
       {% if profile %}
-        <span class="availability {% if not profile.is_available %}is-off{% endif %}">
+        <span class="availability reveal {% if not profile.is_available %}is-off{% endif %}" style="--i:0">
           <span class="dot"></span>
           {% if profile.is_available %}{{ t.available }}{% else %}{{ t.not_available }}{% endif %}
         </span>
       {% endif %}
 
-      <p class="hero-greeting">{{ t.hero_greeting }}</p>
-      <h1><span class="hero-gradient">{{ profile.full_name|default:"Portfolio" }}</span></h1>
-      <p class="hero-headline">{{ profile|tr:"headline" }}</p>
-      <p class="hero-bio">{{ profile|tr:"bio"|truncatewords:34 }}</p>
+      <p class="hero-greeting reveal" style="--i:1">{{ t.hero_greeting }}</p>
+      <h1 class="reveal" style="--i:2"><span class="hero-gradient">{{ profile.full_name|default:"Portfolio" }}</span></h1>
+      {# `data-typing` — JS matnni harfma-harf teradi; matn serverdan to'liq keladi #}
+      <p class="hero-headline reveal" style="--i:3"><span data-typing>{{ profile|tr:"headline" }}</span></p>
+      <p class="hero-bio reveal" style="--i:4">{{ profile|tr:"bio"|truncatewords:34 }}</p>
 
-      <div class="hero-actions">
+      <div class="hero-actions reveal" style="--i:5">
         <a class="btn btn--primary" href="{% url 'projects:list' %}">{{ t.view_projects }}</a>
         <a class="btn btn--ghost" href="#contact">{{ t.contact_me }}</a>
         {% if profile.resume %}
@@ -29,14 +37,14 @@
         {% endif %}
       </div>
 
-      <div class="hero-stats">
+      <div class="hero-stats reveal" style="--i:6">
         <div class="hero-stat"><strong>{{ stats.projects }}</strong><span>{{ t.nav_projects }}</span></div>
         <div class="hero-stat"><strong>{{ stats.technologies }}</strong><span>{{ t.tech_used }}</span></div>
-        <div class="hero-stat"><strong>{{ stats.posts }}</strong><span>{{ t.nav_blog }}</span></div>
+        <div class="hero-stat"><strong>{{ stats.skills }}</strong><span>{{ t.skills_count }}</span></div>
       </div>
     </div>
 
-    <div class="hero-photo">
+    <div class="hero-photo reveal" style="--i:2">
       {% if profile.photo %}
         <img src="{{ profile.photo.url }}" alt="{{ profile.full_name }}">
       {% else %}
@@ -72,16 +80,17 @@
     </div>
     <div class="skill-grid">
       {% for category in skill_categories %}
-        <div class="card reveal">
+        <div class="card reveal" style="--i:{{ forloop.counter0 }}">
           <h3 class="skill-cat-title">
             {% if category.icon %}<span>{{ category.icon }}</span>{% endif %}
             {{ category|tr:"name" }}
           </h3>
           {% for skill in category.skills.all %}
-            <div class="skill-row">
+            {# `--i` chiziqlar navbat bilan to'lishi uchun #}
+            <div class="skill-row" style="--i:{{ forloop.counter0 }}">
               <div class="skill-row-head">
                 <span>{{ skill.name }}</span>
-                <span>{{ skill.get_level_display }}</span>
+                <span class="skill-meta">{{ skill.level_label }}<b>{{ skill.percent }}%</b></span>
               </div>
               <div class="skill-bar"><i data-percent="{{ skill.percent }}"></i></div>
             </div>
@@ -103,7 +112,7 @@
     </div>
     <div class="timeline">
       {% for item in experiences %}
-        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}">
+        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}" style="--i:{{ forloop.counter0 }}">
           <span class="timeline-period">
             {{ item.start_date|date:"M Y" }} —
             {% if item.end_date %}{{ item.end_date|date:"M Y" }}{% else %}{{ t.present }}{% endif %}
@@ -132,7 +141,7 @@
     </div>
     <div class="timeline">
       {% for item in educations %}
-        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}">
+        <div class="timeline-item reveal {% if item.is_current %}is-current{% endif %}" style="--i:{{ forloop.counter0 }}">
           <span class="timeline-period">
             {{ item.start_date|date:"M Y" }} —
             {% if item.end_date %}{{ item.end_date|date:"M Y" }}{% else %}{{ t.present }}{% endif %}

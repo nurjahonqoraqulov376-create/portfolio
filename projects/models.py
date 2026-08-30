@@ -4,6 +4,7 @@ from django.db import models
 from django.urls import reverse
 
 from core.i18n import TranslatedMixin
+from core.models import validate_upload_size
 from core.translations import choice_label
 
 
@@ -62,7 +63,15 @@ class Project(TranslatedMixin):
     description_uz = models.TextField("To'liq tavsif (uz)")
     description_en = models.TextField("To'liq tavsif (en)", blank=True)
 
-    cover = models.ImageField("Rasm", upload_to="projects/", blank=True)
+    cover = models.ImageField(
+        "Rasm", upload_to="projects/", blank=True, validators=[validate_upload_size]
+    )
+    icon = models.CharField(
+        "Belgi (emoji)",
+        max_length=8,
+        blank=True,
+        help_text="Rasm yuklanmagan bo'lsa, muqovada shu emoji chiqadi. Masalan: 🤖",
+    )
     technologies = models.ManyToManyField(
         Technology, related_name="projects", verbose_name="Texnologiyalar", blank=True
     )

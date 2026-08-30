@@ -6,6 +6,9 @@ from .i18n import current_lang
 from .models import ContactMessage
 from .translations import ui
 
+MESSAGE_MIN_LENGTH = 10
+MESSAGE_MAX_LENGTH = 4000
+
 
 class ContactForm(forms.ModelForm):
     """
@@ -24,7 +27,9 @@ class ContactForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"autocomplete": "name"}),
             "email": forms.EmailInput(attrs={"autocomplete": "email"}),
             "subject": forms.TextInput(),
-            "message": forms.Textarea(attrs={"rows": 5}),
+            # `maxlength` — brauzer tomonda qulaylik uchun; haqiqiy tekshiruv
+            # baribir serverda (`clean_message`), chunki brauzerga ishonib bo'lmaydi
+            "message": forms.Textarea(attrs={"rows": 5, "maxlength": MESSAGE_MAX_LENGTH}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -49,10 +54,23 @@ class ContactForm(forms.ModelForm):
 
     def clean_message(self):
         message = self.cleaned_data["message"].strip()
-        if len(message) < 10:
+        if len(message) < MESSAGE_MIN_LENGTH:
             errors = {
-                "uz": "Xabar juda qisqa — kamida 10 ta belgi yozing.",
-                "en": "Message is too short — please write at least 10 characters.",
+                "uz": f"Xabar juda qisqa — kamida {MESSAGE_MIN_LENGTH} ta belgi yozing.",
+                "en": (
+                    "Message is too short — please write at least "
+                    f"{MESSAGE_MIN_LENGTH} characters."
+                ),
+            }
+            raise forms.ValidationError(errors.get(current_lang(), errors["uz"]))
+
+        # Yuqori chegara: `message` — TextField, ya'ni bazada uzunlik cheklovi yo'q.
+        # Cheklamasak, bitta so'rov bilan megabaytlab matn yuborib bazani ham,
+        # ogohlantirish xatini ham shishirib yuborish mumkin.
+        if len(message) > MESSAGE_MAX_LENGTH:
+            errors = {
+                "uz": f"Xabar juda uzun — {MESSAGE_MAX_LENGTH} ta belgidan oshmasin.",
+                "en": f"Message is too long — keep it under {MESSAGE_MAX_LENGTH} characters.",
             }
             raise forms.ValidationError(errors.get(current_lang(), errors["uz"]))
         return message

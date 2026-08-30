@@ -10,21 +10,25 @@
   <div class="container">
     <p><a href="{% url 'projects:list' %}">← {{ t.back_to_projects }}</a></p>
 
-    <div class="section-head" style="max-width:760px">
+    <div class="section-head reveal" style="max-width:760px">
       <span class="status status--{{ project.status }}">{{ project.status_label }}</span>
       <h1>{{ project|tr:"title" }}</h1>
       <p>{{ project|tr:"summary" }}</p>
     </div>
 
-    {% if project.cover %}
-      <img class="card" style="padding:0;overflow:hidden;margin-bottom:32px"
-           src="{{ project.cover.url }}" alt="{{ project|tr:'title' }}">
-    {% else %}
-      <img class="card" style="padding:0;overflow:hidden;margin-bottom:32px"
-           src="{% static 'img/project-placeholder.svg' %}" alt="">
-    {% endif %}
+    {% with project.technologies.all|first as tech0 %}
+      <div class="project-hero reveal" style="--i:1{% if tech0 %};--cover-color: {{ tech0.color }}{% endif %}">
+        {% if project.cover %}
+          <img src="{{ project.cover.url }}" alt="{{ project|tr:'title' }}">
+        {% else %}
+          <span class="project-cover-icon {% if not project.icon %}project-cover-fallback{% endif %}">
+            {% if project.icon %}{{ project.icon }}{% else %}&lt;/&gt;{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    {% endwith %}
 
-    <div class="contact-grid">
+    <div class="contact-grid reveal" style="--i:2">
       <div class="prose" style="order:2">
         <h3>{{ t.tech_used }}</h3>
         <div class="project-tags">
@@ -57,7 +61,7 @@
 {% if related_projects %}
 <section class="section section--soft">
   <div class="container">
-    <div class="section-head"><h2>{{ t.other_projects }}</h2></div>
+    <div class="section-head reveal"><h2>{{ t.other_projects }}</h2></div>
     <div class="project-grid">
       {% for project in related_projects %}
         {% include "partials/project_card.html" %}

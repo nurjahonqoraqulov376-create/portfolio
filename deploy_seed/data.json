@@ -1,0 +1,289 @@
+[
+{
+  "model": "core.profile",
+  "pk": 3,
+  "fields": {
+    "full_name": "Nurjahon Qoraqulov",
+    "headline_uz": "Junior Python / Django Dasturchi",
+    "headline_en": "Junior Python / Django Developer",
+    "bio_uz": "Salom! Men Nurjahon — Python va Django bilan backend dasturlashni o'rganyapman.\r\n\r\n2025-yil sentabridan beri Najot Ta'limda Django backend yo'nalishida o'qiyman. O'rganganlarimni faqat darsda qoldirmay, amalda sinab ko'rdim: parda do'koni uchun to'liq sayt va shu do'konning Telegram botini yozdim — ikkalasi ham Django admin panelidan boshqariladi.\r\n\r\nMenga eng qiziq tomoni — ma'lumotlar bazasini to'g'ri loyihalash va Django ORM bilan ishlash. Hozir REST API (DRF) va PostgreSQL bilan chuqurroq shug'ullanyapman.\r\n\r\nAmaliyot (stajirovka) yoki junior backend pozitsiyasiga ochiqman.",
+    "bio_en": "Hi! I'm Nurjahon, and I'm learning backend development with Python and Django.\r\n\r\nSince September 2025 I have been studying Django backend development at Najot Ta'lim. I didn't want what I learned to stay in the classroom, so I put it into practice: I built a complete website for a curtain shop and a Telegram bot for the same shop — both managed from the Django admin.\r\n\r\nWhat I enjoy most is designing the database properly and working with the Django ORM. Right now I'm going deeper into REST APIs (DRF) and PostgreSQL.\r\n\r\nI'm open to an internship or a junior backend position.",
+    "location_uz": "Angor tumani, Surxondaryo viloyati",
+    "location_en": "Angor district, Surkhandarya region, Uzbekistan",
+    "photo": "profile/photo_2026-05-06_23-10-38_2.jpg",
+    "resume": "resume/nurjahon-qoraqulov-cv-uz.pdf",
+    "email": "nurjahonqoraqulov376@gmail.com",
+    "phone": "+998 99 986 71 99",
+    "telegram": "https://t.me/nurik_developerr07",
+    "github": "https://github.com/nurjahonqoraqulov376-create",
+    "linkedin": "",
+    "website": "",
+    "is_available": true,
+    "updated_at": "2026-08-13T15:47:25.124Z"
+  }
+},
+{
+  "model": "core.skillcategory",
+  "pk": 9,
+  "fields": {
+    "name_uz": "Backend",
+    "name_en": "Backend",
+    "icon": "🐍",
+    "order": 1
+  }
+},
+{
+  "model": "core.skillcategory",
+  "pk": 10,
+  "fields": {
+    "name_uz": "Ma'lumotlar bazasi",
+    "name_en": "Databases",
+    "icon": "🗄️",
+    "order": 2
+  }
+},
+{
+  "model": "core.skillcategory",
+  "pk": 11,
+  "fields": {
+    "name_uz": "Vositalar",
+    "name_en": "Tools",
+    "icon": "🛠️",
+    "order": 3
+  }
+},
+{
+  "model": "core.skillcategory",
+  "pk": 12,
+  "fields": {
+    "name_uz": "Frontend asoslari",
+    "name_en": "Frontend basics",
+    "icon": "🎨",
+    "order": 4
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 25,
+  "fields": {
+    "category": 9,
+    "name": "Python",
+    "level": 3,
+    "order": 1
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 26,
+  "fields": {
+    "category": 9,
+    "name": "Django",
+    "level": 3,
+    "order": 2
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 27,
+  "fields": {
+    "category": 9,
+    "name": "Django ORM",
+    "level": 3,
+    "order": 3
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 28,
+  "fields": {
+    "category": 9,
+    "name": "Django REST Framework",
+    "level": 2,
+    "order": 4
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 29,
+  "fields": {
+    "category": 10,
+    "name": "PostgreSQL",
+    "level": 2,
+    "order": 1
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 30,
+  "fields": {
+    "category": 10,
+    "name": "SQLite",
+    "level": 3,
+    "order": 2
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 31,
+  "fields": {
+    "category": 11,
+    "name": "Git / GitHub",
+    "level": 3,
+    "order": 1
+  }
+},
+{
+  "model": "core.skill",
+  "pk": 32,
+  "fields": {
+    "category": 12,
+    "name": "HTML / CSS",
+    "level": 3,
+    "order": 1
+  }
+},
+{
+  "model": "core.education",
+  "pk": 4,
+  "fields": {
+    "degree_uz": "Django backend dasturlash kursi",
+    "degree_en": "Django backend development course",
+    "institution_uz": "Najot Ta'lim",
+    "institution_en": "Najot Ta'lim",
+    "description_uz": "Python asoslaridan Django'da to'liq loyiha yozishgacha: modellar va ORM, class-based viewlar, shablonlar, formalar, autentifikatsiya va REST API.\n\nKurs 2026-yil sentabrida tugaydi.",
+    "description_en": "From Python fundamentals to building a complete Django project: models and the ORM, class based views, templates, forms, authentication and REST APIs.\n\nThe course finishes in September 2026.",
+    "start_date": "2025-09-01",
+    "end_date": null,
+    "certificate_url": "",
+    "order": 1
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 23,
+  "fields": {
+    "name": "Python",
+    "slug": "python",
+    "color": "#3776ab"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 24,
+  "fields": {
+    "name": "Django",
+    "slug": "django",
+    "color": "#0c4b33"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 25,
+  "fields": {
+    "name": "Django REST Framework",
+    "slug": "drf",
+    "color": "#a30000"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 26,
+  "fields": {
+    "name": "PostgreSQL",
+    "slug": "postgresql",
+    "color": "#336791"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 27,
+  "fields": {
+    "name": "SQLite",
+    "slug": "sqlite",
+    "color": "#0f80cc"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 28,
+  "fields": {
+    "name": "Git",
+    "slug": "git",
+    "color": "#f05033"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 29,
+  "fields": {
+    "name": "HTML/CSS",
+    "slug": "html-css",
+    "color": "#e34f26"
+  }
+},
+{
+  "model": "projects.technology",
+  "pk": 30,
+  "fields": {
+    "name": "Telegram Bot API",
+    "slug": "telegram-bot",
+    "color": "#2aabee"
+  }
+},
+{
+  "model": "projects.project",
+  "pk": 9,
+  "fields": {
+    "title_uz": "Parda do'koni sayti",
+    "title_en": "Curtain shop website",
+    "slug": "parda-dokoni-sayti",
+    "summary_uz": "Parda do'koni uchun Django sayti: katalog, mahsulot rasmlari va admin paneldan boshqaruv.",
+    "summary_en": "A Django site for a curtain shop: catalog, product photos and full admin control.",
+    "description_uz": "Parda sotadigan do'kon uchun yozgan birinchi to'liq loyiham.\r\n\r\nSaytda mahsulot katalogi bor: pardalar kategoriyalarga bo'lingan, har biri uchun rasm va batafsil sahifa mavjud. Mijoz yoqqan mahsulotini ko'rib, sayt orqali buyurtma yoki so'rov qoldirishi mumkin.\r\n\r\nBarcha kontent — kategoriyalar, mahsulotlar, rasmlar va kelib tushgan buyurtmalar — Django admin panelidan boshqariladi, ya'ni do'kon egasi kodga tegmasdan o'zi yangi mahsulot qo'sha oladi.\r\n\r\nShu loyihada Django modellari, ForeignKey bog'lanishlari, rasm yuklash (ImageField va MEDIA sozlamalari), shablonlar va formalar bilan ishlashni amalda o'rgandim.",
+    "description_en": "My first complete project, built for a shop that sells curtains.\r\n\r\nThe site has a product catalog: curtains are split into categories, each with photos and a detail page. A customer can browse the products and leave an order or an enquiry through the site.\r\n\r\nEverything — categories, products, images and incoming orders — is managed from the Django admin, so the shop owner can add new products without touching any code.\r\n\r\nThis project is where I really learned Django models, ForeignKey relations, image uploads (ImageField and MEDIA settings), templates and forms.",
+    "cover": "projects/Снимок_экрана_2026-08-13_184520.png",
+    "icon": "",
+    "github_url": "",
+    "live_url": "",
+    "status": "done",
+    "is_featured": true,
+    "started_at": "2026-02-01",
+    "order": 1,
+    "created_at": "2026-08-13T12:40:25.324Z",
+    "technologies": [
+      24,
+      29,
+      23,
+      27
+    ]
+  }
+},
+{
+  "model": "projects.project",
+  "pk": 10,
+  "fields": {
+    "title_uz": "Parda do'koni Telegram boti",
+    "title_en": "Curtain shop Telegram bot",
+    "slug": "parda-dokoni-telegram-bot",
+    "summary_uz": "Shu do'kon uchun bot: katalog, buyurtma va adminga xabar. To'lov cheki qo'lda tasdiqlanadi.",
+    "summary_en": "A bot for the same shop: catalog, orders and operator notifications, with manual receipt approval.",
+    "description_uz": "Parda do'koni sayti bilan bir vaqtda yozilgan Telegram bot — mijozlarning ko'pchiligi saytga emas, Telegramga o'rganib qolgani uchun.\r\n\r\nBot katalogni ko'rsatadi, mijozdan buyurtmani qabul qiladi va yangi buyurtma haqida do'kon admini (operatori) ga darhol xabar yuboradi.\r\n\r\nTo'lov bo'yicha ikki variant bor: onlayn va do'kondan olib ketishda naqd. Onlayn to'lov tizimi (Payme/Click kabi) hali integratsiya qilinmagan — mijoz to'lov chekining rasmini botga yuboradi, admin esa uni ko'rib qo'lda tasdiqlaydi. Keyingi bosqichda haqiqiy to'lov provayderini ulashni rejalashtiryapman.\r\n\r\nBu loyihada Django'ni tashqi xizmat bilan bog'lash, foydalanuvchi bilan bosqichma-bosqich suhbat qurish va rasm (chek) qabul qilishni o'rgandim.",
+    "description_en": "A Telegram bot written alongside the curtain shop website, because most of the customers live in Telegram rather than on websites.\r\n\r\nThe bot shows the catalog, takes the customer's order and immediately notifies the shop admin (operator) about every new order.\r\n\r\nThere are two payment options: online, and cash on pickup. A real payment provider (Payme/Click) is not integrated yet — the customer sends a photo of the payment receipt to the bot and the admin approves it manually. Connecting an actual payment provider is the next step I have planned.\r\n\r\nThis project taught me how to connect Django to an external service, build a step-by-step conversation with the user, and handle image (receipt) uploads.",
+    "cover": "projects/Снимок_экрана_2026-08-13_184915.png",
+    "icon": "",
+    "github_url": "",
+    "live_url": "",
+    "status": "done",
+    "is_featured": true,
+    "started_at": "2026-04-01",
+    "order": 2,
+    "created_at": "2026-08-13T12:40:25.326Z",
+    "technologies": [
+      24,
+      23,
+      27,
+      30
+    ]
+  }
+}
+]

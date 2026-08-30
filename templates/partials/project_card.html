@@ -1,12 +1,20 @@
 {% load static portfolio_extras %}
-<article class="card project-card reveal">
-  <a class="project-cover" href="{{ project.get_absolute_url }}" aria-hidden="true" tabindex="-1">
+{# `--i` navbat bilan chiqishi uchun; `forloop` chaqiruvchi shablondan meros bo'ladi #}
+<article class="card project-card reveal" style="--i:{{ forloop.counter0|default:0 }}">
+  {# Muqova rangi loyihaning birinchi texnologiyasidan olinadi #}
+  {# `.first` emas, `|first` — prefetch keshidan foydalanadi, ortiqcha so'rov ketmaydi #}
+  {% with project.technologies.all|first as tech0 %}
+  <a class="project-cover" href="{{ project.get_absolute_url }}" aria-hidden="true" tabindex="-1"
+     {% if tech0 %}style="--cover-color: {{ tech0.color }}"{% endif %}>
     {% if project.cover %}
       <img src="{{ project.cover.url }}" alt="" loading="lazy">
     {% else %}
-      <img src="{% static 'img/project-placeholder.svg' %}" alt="" loading="lazy">
+      <span class="project-cover-icon {% if not project.icon %}project-cover-fallback{% endif %}">
+        {% if project.icon %}{{ project.icon }}{% else %}&lt;/&gt;{% endif %}
+      </span>
     {% endif %}
   </a>
+  {% endwith %}
   <div class="project-body">
     <div class="post-meta">
       <span class="status status--{{ project.status }}">{{ project.status_label }}</span>

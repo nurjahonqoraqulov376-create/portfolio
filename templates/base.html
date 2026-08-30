@@ -18,9 +18,11 @@
   <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-  {# Mavzu (dark/light) sahifa chizilishidan oldin qo'llanadi — "miltillash" bo'lmasin #}
+  {# Mavzu sahifa chizilishidan oldin qo'llanadi — "miltillash" bo'lmasin #}
+  {# `js` klassi: JS o'chiq bo'lsa `.reveal` kontenti yashirinib qolmaydi #}
   <script>
     (function () {
+      document.documentElement.classList.add('js');
       try {
         var saved = localStorage.getItem('theme');
         if (!saved) {
@@ -45,9 +47,14 @@
       <nav class="nav" id="nav" aria-label="{{ t.menu }}">
         <a href="{% url 'core:home' %}#about">{{ t.nav_about }}</a>
         <a href="{% url 'core:home' %}#skills">{{ t.nav_skills }}</a>
-        <a href="{% url 'core:home' %}#experience">{{ t.nav_experience }}</a>
+        {% if has_experience %}<a href="{% url 'core:home' %}#experience">{{ t.nav_experience }}</a>{% endif %}
+        {% if has_education %}<a href="{% url 'core:home' %}#education">{{ t.education_title }}</a>{% endif %}
         <a href="{% url 'projects:list' %}" class="{% is_active 'projects:list' %}">{{ t.nav_projects }}</a>
+        {% comment %}
+        Blog hozircha yashirilgan. Maqola yozganingizdan keyin pastdagi havola qatorini
+        shu izoh blokidan tashqariga chiqaring — menyuda "Blog" qaytadi.
         <a href="{% url 'blog:list' %}" class="{% is_active 'blog:list' %}">{{ t.nav_blog }}</a>
+        {% endcomment %}
         <a href="{% url 'core:home' %}#contact">{{ t.nav_contact }}</a>
       </nav>
 

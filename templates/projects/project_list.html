@@ -6,13 +6,13 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <div class="section-head">
+    <div class="section-head reveal">
       <span class="section-eyebrow">{{ t.projects_subtitle }}</span>
       <h2>{{ t.projects_title }}</h2>
     </div>
 
     {% if technologies %}
-      <div class="filters">
+      <div class="filters reveal" style="--i:1">
         <a class="btn btn--sm {% if not active_tech %}btn--primary{% else %}btn--ghost{% endif %}"
            href="{% url 'projects:list' %}">{{ t.filter_all }}</a>
         {% for tech in technologies %}

@@ -2,7 +2,20 @@
    Portfolio uslublari
    Tashqi kutubxona/CDN ishlatilmagan — hammasi shu faylda.
    Ranglar CSS o'zgaruvchilarida; `data-theme` atributi orqali almashadi.
+
+   Tuzilishi:
+     1. Tokenlar (rang, o'lcham, tezlik)
+     2. Asos va tipografika
+     3. Header va navigatsiya
+     4. Umumiy komponentlar (btn, card, tag, xabar)
+     5. Hero
+     6. Bo'limlar (ko'nikma, timeline, loyiha, blog, kontakt)
+     7. Footer va xato sahifalari
+     8. Animatsiya: reveal, @keyframes, harakatni kamaytirish
+     9. Responsiv
    ========================================================================= */
+
+/* ------------------------------------------------------------- 1. tokenlar */
 
 :root {
   --bg: #0b1020;
@@ -15,11 +28,26 @@
   --accent-2: #a78bfa;
   --accent-soft: rgba(110, 168, 254, 0.14);
   --success: #34d399;
+  --warning: #facc15;
   --danger: #f87171;
   --shadow: 0 18px 40px rgba(2, 6, 23, 0.45);
+  --shadow-lift: 0 26px 60px rgba(2, 6, 23, 0.55);
   --radius: 16px;
   --radius-sm: 10px;
   --container: 1120px;
+
+  /* harakat: bitta joyda turgani uchun butun sayt bir maromda ishlaydi */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 0.16s;
+  --dur: 0.32s;
+  --dur-slow: 0.6s;
+
+  /* header balandligi 3 joyda kerak — sticky menyu, mobil menyu, scroll-padding */
+  --header-h: 68px;
+  --orb-opacity: 0.5;
+  --glow-strength: 22%;
+
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", sans-serif;
   --mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
@@ -36,11 +64,28 @@
   --accent-2: #7c3aed;
   --accent-soft: rgba(37, 99, 235, 0.10);
   --shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+  --shadow-lift: 0 22px 48px rgba(15, 23, 42, 0.16);
+  /* yorug' fonda blur qilingan sharlar va kursor nuri kuchsizroq bo'lishi kerak */
+  --orb-opacity: 0.26;
+  --glow-strength: 12%;
 }
+
+/* Konus gradientni aylantirish uchun burchak animatsiyalanadigan bo'lishi kerak.
+   Qo'llab-quvvatlamaydigan brauzerda ramka shunchaki qimirlamaydi — buziladigan joyi yo'q. */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ------------------------------------------------------- 2. asos, tipografika */
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
 
 body {
   margin: 0;
@@ -49,7 +94,11 @@ body {
   color: var(--text);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+/* Mobil menyu ochilganda orqa fon scroll bo'lmasin (klassni JS qo'yadi) */
+body.is-locked { overflow: hidden; }
 
 img { max-width: 100%; display: block; }
 
@@ -62,6 +111,13 @@ h2 { font-size: clamp(1.5rem, 3.2vw, 2.1rem); }
 h3 { font-size: 1.15rem; }
 p { margin: 0 0 1rem; }
 
+/* Klaviatura bilan yuruvchilar uchun ko'rinadigan fokus halqasi */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 .container {
   width: 100%;
   max-width: var(--container);
@@ -69,16 +125,13 @@ p { margin: 0 0 1rem; }
   padding-inline: 20px;
 }
 
-.skip-link {
-  position: absolute;
-  left: -9999px;
-}
+.skip-link { position: absolute; left: -9999px; }
 .skip-link:focus {
   left: 12px; top: 12px; z-index: 100;
   background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px;
 }
 
-/* ------------------------------------------------------------------ header */
+/* --------------------------------------------------------------- 3. header */
 
 .site-header {
   position: sticky;
@@ -87,15 +140,18 @@ p { margin: 0 0 1rem; }
   backdrop-filter: blur(12px);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color var(--dur), background var(--dur), box-shadow var(--dur);
 }
-.site-header.is-scrolled { border-bottom-color: var(--border); }
+.site-header.is-scrolled {
+  border-bottom-color: var(--border);
+  box-shadow: 0 10px 30px -20px rgba(2, 6, 23, 0.6);
+}
 
 .header-inner {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 68px;
+  min-height: var(--header-h);
 }
 
 .brand {
@@ -113,6 +169,11 @@ p { margin: 0 0 1rem; }
   padding: 4px 8px;
   border-radius: 8px;
   font-size: 0.85rem;
+  transition: transform var(--dur) var(--ease-spring), background var(--dur);
+}
+.brand:hover .brand-mark {
+  transform: rotate(-8deg) scale(1.08);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .nav {
@@ -122,12 +183,13 @@ p { margin: 0 0 1rem; }
   flex-wrap: wrap;
 }
 .nav a {
+  position: relative;
   color: var(--text-muted);
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 0.94rem;
   font-weight: 500;
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--dur-fast), background var(--dur-fast);
 }
 .nav a:hover,
 .nav a.is-active { color: var(--text); background: var(--accent-soft); text-decoration: none; }
@@ -142,8 +204,14 @@ p { margin: 0 0 1rem; }
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 7px 12px;
+  transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
 }
-.lang-switch:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.lang-switch:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
 
 .icon-btn {
   display: inline-flex;
@@ -156,9 +224,12 @@ p { margin: 0 0 1rem; }
   color: var(--text);
   cursor: pointer;
   font-size: 1rem;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color var(--dur-fast), color var(--dur-fast),
+              background var(--dur-fast), transform var(--dur) var(--ease-spring);
 }
-.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+#theme-toggle:hover { transform: rotate(25deg); }
+#theme-toggle:active { transform: scale(0.9); }
 
 [data-theme="dark"] .icon-sun { display: none; }
 [data-theme="light"] .icon-moon { display: none; }
@@ -166,15 +237,15 @@ p { margin: 0 0 1rem; }
 .nav-toggle { display: none; flex-direction: column; gap: 4px; }
 .nav-toggle span {
   display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px;
-  transition: transform 0.2s, opacity 0.2s;
+  transition: transform 0.25s var(--ease), opacity 0.2s;
 }
 .nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* ------------------------------------------------------------------ umumiy */
+/* ---------------------------------------------------------- 4. komponentlar */
 
-.section { padding: 84px 0; }
+.section { padding: 84px 0; position: relative; }
 .section--soft { background: var(--bg-soft); }
 
 .section-head { margin-bottom: 38px; max-width: 640px; }
@@ -193,8 +264,10 @@ p { margin: 0 0 1rem; }
 .section-head p { color: var(--text-muted); margin: 0; }
 
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 12px 22px;
   border-radius: 999px;
@@ -202,26 +275,85 @@ p { margin: 0 0 1rem; }
   font-size: 0.95rem;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s, background 0.15s, border-color 0.15s;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur),
+              background var(--dur), border-color var(--dur), color var(--dur);
 }
 .btn:hover { text-decoration: none; transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.97); }
+
 .btn--primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  /* gradient 200% kenglikda — hover'da sekin siljiydi */
+  background: linear-gradient(120deg, var(--accent), var(--accent-2), var(--accent));
+  background-size: 200% auto;
   color: #fff;
   box-shadow: 0 10px 26px var(--accent-soft);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur),
+              background-position 0.7s var(--ease);
+}
+.btn--primary:hover {
+  background-position: right center;
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 .btn--ghost { border-color: var(--border); color: var(--text); background: transparent; }
-.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .btn--sm { padding: 8px 16px; font-size: 0.86rem; }
 
+/* Yuborilayotgan tugma: matn so'nadi, o'rniga aylanuvchi halqa chiqadi */
+.btn.is-loading { pointer-events: none; color: transparent; }
+.btn.is-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: #fff;
+  opacity: 0.9;
+  animation: spin 0.7s linear infinite;
+}
+.btn--primary.is-loading::after { border-color: rgba(255, 255, 255, 0.35); border-top-color: #fff; }
+
+/*
+   Kartochka.
+   `transform` faqat hover/egilish uchun ishlatiladi, `.reveal` esa alohida
+   `translate` xossasini oladi — shu tufayli ikkalasi bir-birini bosmaydi.
+   (Ilgari `.reveal.is-visible { transform: none }` hover ko'tarilishini o'chirib qo'yardi.)
+*/
 .card {
+  position: relative;
+  isolation: isolate;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 22px;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transform: perspective(900px)
+             rotateX(var(--rx, 0deg))
+             rotateY(var(--ry, 0deg))
+             translateY(var(--lift, 0px));
+  transition: transform 0.18s var(--ease), border-color var(--dur), box-shadow var(--dur);
 }
-.card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--shadow); }
+.card:hover { --lift: -6px; border-color: var(--accent); box-shadow: var(--shadow-lift); }
+
+/* Kursor ortidan yuradigan yumshoq nur */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--accent) var(--glow-strength), transparent),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity var(--dur);
+  pointer-events: none;
+}
+.card:hover::before { opacity: 1; }
+
+/* Formada egilish kerak emas — yozayotganda maydonlar qimirlab ketmasin */
+form.card { transform: none; }
+form.card:hover { --lift: 0px; }
 
 .tag {
   display: inline-block;
@@ -232,6 +364,12 @@ p { margin: 0 0 1rem; }
   border: 1px solid var(--border);
   color: var(--text-muted);
   background: var(--bg-soft);
+  transition: border-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+.tag:hover {
+  border-color: var(--tag-color, var(--accent));
+  color: var(--text);
+  transform: translateY(-2px);
 }
 .tag--dot::before {
   content: "";
@@ -240,50 +378,113 @@ p { margin: 0 0 1rem; }
   background: var(--tag-color, var(--accent));
   margin-right: 6px;
   vertical-align: middle;
+  box-shadow: 0 0 0 0 var(--tag-color, var(--accent));
+  transition: box-shadow var(--dur);
+}
+.tag:hover.tag--dot::before {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color, var(--accent)) 25%, transparent);
 }
 
 .messages { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
 .message {
-  padding: 12px 16px;
+  position: relative;
+  padding: 12px 16px 12px 20px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg-card);
   font-size: 0.94rem;
+  overflow: hidden;
+  animation: pop-in 0.5s var(--ease-spring) both;
+}
+.message::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: currentColor;
 }
 .message--success { border-color: var(--success); color: var(--success); }
 .message--error { border-color: var(--danger); color: var(--danger); }
 
-/* -------------------------------------------------------------------- hero */
+/* ----------------------------------------------------------------- 5. hero */
 
 .hero {
   position: relative;
   padding: 96px 0 76px;
   overflow: hidden;
 }
-.hero::before {
-  content: "";
+
+/* Suzuvchi sharlar: blur qilingan rangli dog'lar. Faqat CSS, canvas emas. */
+.orbs {
   position: absolute;
-  top: -180px; right: -120px;
-  width: 520px; height: 520px;
-  background: radial-gradient(circle, var(--accent-soft), transparent 68%);
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
+  z-index: 0;
 }
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: var(--orb-opacity);
+  will-change: transform;
+}
+.orb--1 {
+  width: 420px; height: 420px;
+  background: var(--accent);
+  top: -140px; right: -80px;
+  animation: float-a 24s ease-in-out infinite;
+}
+.orb--2 {
+  width: 320px; height: 320px;
+  background: var(--accent-2);
+  top: 120px; left: -120px;
+  animation: float-b 30s ease-in-out infinite;
+}
+.orb--3 {
+  width: 260px; height: 260px;
+  background: var(--success);
+  bottom: -140px; left: 45%;
+  opacity: calc(var(--orb-opacity) * 0.5);
+  animation: float-c 26s ease-in-out infinite;
+}
+
 .hero-inner {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;
   gap: 48px;
   align-items: center;
-  position: relative;
 }
 .hero-greeting { color: var(--text-muted); font-family: var(--mono); margin-bottom: 8px; }
 .hero h1 { margin-bottom: 10px; }
 .hero-gradient {
-  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  background: linear-gradient(120deg, var(--accent), var(--accent-2), var(--accent));
+  background-size: 220% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: gradient-shift 9s linear infinite;
 }
-.hero-headline { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 18px; }
+
+.hero-headline {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  min-height: 1.9em; /* matn terilayotganda qator sakrab ketmasin */
+}
+/* Yozuv kursori */
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 3px;
+  vertical-align: -0.16em;
+  background: var(--accent);
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
 .hero-bio { max-width: 54ch; color: var(--text-muted); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 
@@ -297,24 +498,36 @@ p { margin: 0 0 1rem; }
   border-radius: 999px;
   padding: 6px 14px;
   margin-bottom: 18px;
+  background: color-mix(in srgb, var(--bg-card) 60%, transparent);
 }
 .availability .dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--success);
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18);
+  animation: pulse-ring 2.2s ease-out infinite;
 }
-.availability.is-off .dot { background: var(--text-muted); box-shadow: none; }
+.availability.is-off .dot { background: var(--text-muted); box-shadow: none; animation: none; }
 
+/* Aylanuvchi gradient ramka: `padding` gradientni ko'rsatadi, rasm ustini yopadi */
 .hero-photo {
   position: relative;
   aspect-ratio: 1;
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: linear-gradient(160deg, var(--bg-soft), var(--bg-card));
+  padding: 3px;
+  background: conic-gradient(
+    from var(--angle),
+    var(--accent), var(--accent-2), var(--success), var(--accent)
+  );
   box-shadow: var(--shadow);
+  animation: rotate-angle 10s linear infinite, float-slow 7s ease-in-out infinite;
 }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; }
+.hero-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 21px;
+  /* Rasm yuklanmagan bo'lsa placeholder SVG shaffof — orqadan shu fon ko'rinadi */
+  background: linear-gradient(160deg, var(--accent-soft), var(--bg-card));
+}
 
 .hero-stats {
   display: flex;
@@ -322,37 +535,85 @@ p { margin: 0 0 1rem; }
   margin-top: 34px;
   flex-wrap: wrap;
 }
-.hero-stat strong { display: block; font-size: 1.5rem; color: var(--text); }
+.hero-stat strong {
+  display: block;
+  font-size: 1.5rem;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .hero-stat span { font-size: 0.84rem; color: var(--text-muted); }
 
-/* ------------------------------------------------------------------ skills */
+/* ------------------------------------------------------------- 6. bo'limlar */
 
 .skill-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+  /* Turkumlarda ko'nikma soni har xil — kartochkalar bir-biriga cho'zilmasin,
+     aks holda kam ko'nikmali kartochka ichida katta bo'sh joy qoladi */
+  align-items: start;
 }
 .skill-cat-title { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.skill-row { margin-bottom: 14px; }
+.skill-cat-title span:first-child {
+  display: inline-grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  font-size: 1rem;
+}
+.skill-row { margin-bottom: 16px; }
 .skill-row:last-child { margin-bottom: 0; }
 .skill-row-head {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
   font-size: 0.9rem;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
-.skill-row-head span:last-child { color: var(--text-muted); font-size: 0.8rem; }
-.skill-bar { height: 7px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
+.skill-meta { display: inline-flex; align-items: baseline; gap: 8px; color: var(--text-muted); font-size: 0.8rem; }
+.skill-meta b {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.skill-bar {
+  height: 10px;
+  background: var(--bg-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
 .skill-bar > i {
+  position: relative;
   display: block;
   height: 100%;
   width: 0;
+  overflow: hidden;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.9s var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
 }
-
-/* --------------------------------------------------------------- timeline */
+/* Chiziq ustidan sekin o'tuvchi yorug'lik */
+.skill-bar > i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 220ms);
+}
 
 .timeline { position: relative; padding-left: 28px; }
 .timeline::before {
@@ -372,31 +633,125 @@ p { margin: 0 0 1rem; }
   border-radius: 50%;
   background: var(--bg);
   border: 2px solid var(--accent);
+  transition: transform var(--dur) var(--ease-spring), background var(--dur);
 }
-.timeline-item.is-current::before { background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+.timeline-item:hover::before { transform: scale(1.35); background: var(--accent); }
+.timeline-item.is-current::before {
+  background: var(--accent);
+  animation: pulse-accent 2.4s ease-out infinite;
+}
 .timeline-period { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); }
 .timeline-item h3 { margin: 4px 0 2px; }
 .timeline-org { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 8px; }
 .timeline-body { color: var(--text-muted); font-size: 0.95rem; }
 .timeline-body p:last-child { margin-bottom: 0; }
 
-/* --------------------------------------------------------------- loyihalar */
-
-.project-grid {
+.project-grid,
+.post-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 22px;
 }
 .project-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+
+/*
+   Muqova. Rasm yo'q bo'lsa — loyihaning birinchi texnologiyasi rangidan
+   gradient va katta emoji. `--cover-color` shablondan keladi.
+*/
 .project-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
   aspect-ratio: 16 / 9;
-  background: linear-gradient(135deg, var(--bg-soft), var(--accent-soft));
   border-bottom: 1px solid var(--border);
   overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%,
+      color-mix(in srgb, var(--cover-color, var(--accent)) 40%, transparent),
+      transparent 60%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--cover-color, var(--accent)) 16%, var(--bg-soft)),
+      color-mix(in srgb, var(--cover-mix, var(--accent-2)) 14%, var(--bg-card)));
+}
+
+/*
+   Birinchi rang loyihaning texnologiyasidan keladi, lekin ko'p loyihada u bir xil
+   bo'lib qolishi mumkin (masalan hammasi Django). Ikkinchi rang kartochkaning
+   grid'dagi o'rniga qarab almashadi — shunda qo'shni kartochkalar bir xil ko'rinmaydi.
+*/
+.project-grid > *:nth-child(3n + 2) .project-cover { --cover-mix: var(--accent-2); }
+.project-grid > *:nth-child(3n + 3) .project-cover { --cover-mix: var(--success); }
+.project-grid > *:nth-child(3n + 1) .project-cover { --cover-mix: var(--accent); }
+/* Yengil to'r naqsh — tekis gradient "yalang'och" ko'rinmasin */
+.project-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 6%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at 50% 50%, #000, transparent 75%);
+  opacity: 0.6;
 }
 .project-cover img { width: 100%; height: 100%; object-fit: cover; }
+.project-cover-icon {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2.4rem, 7vw, 3.4rem);
+  line-height: 1;
+  filter: drop-shadow(0 10px 22px rgba(2, 6, 23, 0.4));
+  transition: transform 0.45s var(--ease-spring);
+}
+.project-cover-fallback {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--text) 55%, transparent);
+}
+.card:hover .project-cover-icon { transform: scale(1.14) rotate(-7deg); }
+.card:hover .project-cover img { transform: scale(1.05); }
+.project-cover img { transition: transform 0.5s var(--ease); }
+
+/* Loyiha detali sahifasidagi katta muqova — kartochkadagi bilan bir xil uslub */
+.project-hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 6;
+  max-height: 320px;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 28% 22%,
+      color-mix(in srgb, var(--cover-color, var(--accent)) 42%, transparent),
+      transparent 62%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--cover-color, var(--accent)) 16%, var(--bg-soft)),
+      color-mix(in srgb, var(--accent-2) 12%, var(--bg-card)));
+  box-shadow: var(--shadow);
+}
+.project-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 6%, transparent) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(circle at 50% 50%, #000, transparent 78%);
+  opacity: 0.6;
+}
+.project-hero img { width: 100%; height: 100%; object-fit: cover; }
+.project-hero .project-cover-icon {
+  font-size: clamp(3rem, 10vw, 5rem);
+  animation: float-slow 6s ease-in-out infinite;
+}
+
 .project-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
-.project-body h3 a { color: var(--text); }
+.project-body h3 a { color: var(--text); transition: color var(--dur-fast); }
+.project-body h3 a:hover { color: var(--accent); text-decoration: none; }
 .project-summary { color: var(--text-muted); font-size: 0.94rem; flex: 1; }
 .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
 .project-links { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -409,8 +764,8 @@ p { margin: 0 0 1rem; }
   padding: 3px 9px;
   border-radius: 6px;
 }
-.status--done { background: rgba(52, 211, 153, 0.16); color: var(--success); }
-.status--in_progress { background: rgba(250, 204, 21, 0.16); color: #facc15; }
+.status--done { background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--success); }
+.status--in_progress { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
 .status--planned { background: var(--accent-soft); color: var(--accent); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
@@ -418,17 +773,11 @@ p { margin: 0 0 1rem; }
 .prose { max-width: 72ch; color: var(--text); }
 .prose p { color: var(--text-muted); }
 
-/* -------------------------------------------------------------------- blog */
-
-.post-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 22px;
-}
 .post-meta {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+  align-items: center;
   font-size: 0.82rem;
   color: var(--text-muted);
   font-family: var(--mono);
@@ -447,8 +796,6 @@ p { margin: 0 0 1rem; }
   color: var(--text-muted);
 }
 
-/* ----------------------------------------------------------------- kontakt */
-
 .contact-grid {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -457,13 +804,28 @@ p { margin: 0 0 1rem; }
 }
 .contact-list { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 14px; }
 .contact-list li { display: flex; gap: 12px; align-items: flex-start; }
-.contact-list .label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-.contact-list .value { font-weight: 600; }
+.contact-list .label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.contact-list .value { font-weight: 600; transition: color var(--dur-fast); }
+a.value:hover { color: var(--accent); }
 
 .form-grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
 .form-field { display: flex; flex-direction: column; gap: 6px; }
 .form-field--full { grid-column: 1 / -1; }
-.form-field label { font-size: 0.84rem; color: var(--text-muted); font-weight: 600; }
+.form-field label {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  transform-origin: left center;
+  transition: color var(--dur), transform var(--dur) var(--ease);
+}
+/* Maydonga kirilganda yorliq jonlanadi */
+.form-field:focus-within label { color: var(--accent); transform: translateX(3px); }
+
 .form-control {
   width: 100%;
   padding: 12px 14px;
@@ -473,17 +835,19 @@ p { margin: 0 0 1rem; }
   color: var(--text);
   font: inherit;
   font-size: 0.95rem;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
 }
 .form-control:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px var(--accent-soft);
 }
+.form-control::placeholder { color: color-mix(in srgb, var(--text-muted) 70%, transparent); }
 textarea.form-control { resize: vertical; min-height: 120px; }
 .form-errors { list-style: none; padding: 0; margin: 0; color: var(--danger); font-size: 0.84rem; }
 
-/* ------------------------------------------------------------------ footer */
+/* ------------------------------------------------- 7. footer, xato sahifalar */
 
 .site-footer {
   border-top: 1px solid var(--border);
@@ -502,8 +866,9 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 .footer-inner p { margin: 0; }
 .footer-links { display: flex; gap: 16px; }
-
-/* --------------------------------------------------------------- xato sahifa */
+.footer-links a { color: var(--text-muted); transition: color var(--dur-fast); }
+.footer-links a:hover { color: var(--accent); text-decoration: none; }
+.footer-built { font-family: var(--mono); font-size: 0.82rem; }
 
 .error-page {
   min-height: 60vh;
@@ -516,28 +881,131 @@ textarea.form-control { resize: vertical; min-height: 120px; }
   font-family: var(--mono);
   font-size: clamp(4rem, 16vw, 8rem);
   line-height: 1;
-  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  background: linear-gradient(120deg, var(--accent), var(--accent-2), var(--accent));
+  background-size: 220% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: gradient-shift 6s linear infinite;
 }
 
-/* ------------------------------------------------------------- animatsiya */
+/* ------------------------------------------------------------ 8. animatsiya */
 
-.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s, transform 0.6s; }
-.reveal.is-visible { opacity: 1; transform: none; }
+/*
+   Scroll'da paydo bo'lish.
+   `transform` emas, `translate` ishlatiladi — shunda kartochkaning hover
+   `transform`i bilan to'qnashmaydi. `--i` shablondan keladi va navbat yasaydi.
+   Qoida `.js` klassi ostida: JS o'chiq bo'lsa kontent shunchaki ko'rinib turadi.
+*/
+.js .reveal {
+  opacity: 0;
+  translate: 0 20px;
+  transition: opacity var(--dur-slow) var(--ease), translate var(--dur-slow) var(--ease);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.js .reveal.is-visible { opacity: 1; translate: 0 0; }
 
+/* Sahifa almashganda keskin sakrash bo'lmasin */
+@view-transition { navigation: auto; }
+main { animation: fade-in 0.4s var(--ease) both; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gradient-shift {
+  to { background-position: 220% center; }
+}
+
+@keyframes rotate-angle {
+  to { --angle: 360deg; }
+}
+
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; translate: 0 -10px; scale: 0.96; }
+  100% { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+/* Yashil nuqta "nafas oladi" */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 55%, transparent); }
+  70% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--success) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent); }
+}
+@keyframes pulse-accent {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+  70% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+}
+
+/* Ko'nikma chizig'i ustidan o'tuvchi yorug'lik (uzun pauza bilan) */
+@keyframes shimmer {
+  0%, 55% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Suzuvchi sharlar — har biri boshqacha yo'ldan yuradi */
+@keyframes float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-60px, 50px) scale(1.12); }
+  66% { transform: translate(40px, 90px) scale(0.94); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(90px, -60px) scale(1.15); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-80px, -40px) scale(1.1); }
+  75% { transform: translate(60px, -20px) scale(0.9); }
+}
+/* `transform` ishlatiladi, `translate` emas — `.reveal` o'sha xossani band qilgan */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/*
+   Harakatni kamaytirish so'ralgan bo'lsa — hamma narsa to'xtaydi.
+   Sayt to'liq o'qiladi, faqat jonlanish yo'q.
+*/
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal { opacity: 1; transform: none; transition: none; }
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .js .reveal { opacity: 1; translate: none; transition: none; }
+  .orbs, .caret, .skill-bar > i::after { display: none; }
+  .hero-photo { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* -------------------------------------------------------------- responsive */
+/* ------------------------------------------------------------- 9. responsiv */
+
+/* 3D egilish va kursor nuri faqat haqiqiy sichqoncha bo'lganda ishlaydi */
+@media (hover: none), (pointer: coarse) {
+  .card { transform: none; }
+  .card::before { display: none; }
+  .card:hover { --lift: 0px; }
+}
 
 @media (max-width: 900px) {
-  .hero-inner { grid-template-columns: 1fr; }
-  .hero-photo { max-width: 260px; order: -1; }
+  .hero { padding: 64px 0 60px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+  .hero-photo { max-width: 240px; order: -1; }
   .contact-grid { grid-template-columns: 1fr; }
 }
 
@@ -545,16 +1013,75 @@ textarea.form-control { resize: vertical; min-height: 120px; }
   .nav-toggle { display: inline-flex; }
   .nav {
     position: fixed;
-    inset: 68px 0 auto 0;
+    inset: var(--header-h) 0 auto 0;
     flex-direction: column;
     gap: 0;
+    /* To'liq shaffofmas: `backdrop-filter` ni qo'llab-quvvatlamaydigan
+       brauzerlarda ham menyu ortidagi kontent ko'rinib qolmaydi */
     background: var(--bg-soft);
     border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
     padding: 12px 20px 20px;
-    display: none;
+    /* `display` o'rniga opacity/translate — shu tufayli animatsiya qilinadi */
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 -14px;
+    transition: opacity var(--dur) var(--ease), translate var(--dur) var(--ease),
+                visibility var(--dur);
   }
-  .nav.is-open { display: flex; }
-  .nav a { padding: 12px 8px; border-radius: var(--radius-sm); }
+  .nav.is-open { opacity: 1; visibility: visible; translate: 0 0; }
+  .nav a {
+    padding: 12px 10px;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    translate: 0 -8px;
+    transition: opacity 0.3s var(--ease), translate 0.3s var(--ease),
+                color var(--dur-fast), background var(--dur-fast);
+  }
+  .nav.is-open a { opacity: 1; translate: 0 0; }
+  .nav.is-open a:nth-child(1) { transition-delay: 0.06s; }
+  .nav.is-open a:nth-child(2) { transition-delay: 0.11s; }
+  .nav.is-open a:nth-child(3) { transition-delay: 0.16s; }
+  .nav.is-open a:nth-child(4) { transition-delay: 0.21s; }
+  .nav.is-open a:nth-child(5) { transition-delay: 0.26s; }
+
   .section { padding: 60px 0; }
   .form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .container { padding-inline: 16px; }
+  .hero { padding: 44px 0 48px; }
+  .hero h1 { font-size: clamp(1.75rem, 8vw, 2.3rem); }
+  .hero-headline { font-size: 1.05rem; }
+  .hero-actions .btn { flex: 1 1 auto; justify-content: center; }
+  .hero-photo { max-width: 190px; }
+
+  /* Uchta ko'rsatkich yonma-yon sig'maydi — grid'ga o'tkazamiz */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 28px;
+    text-align: center;
+  }
+  .hero-stat {
+    padding: 12px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  }
+  .hero-stat strong { font-size: 1.25rem; }
+  .hero-stat span { font-size: 0.72rem; }
+
+  .section { padding: 44px 0; }
+  .section-head { margin-bottom: 26px; }
+  .project-grid, .post-grid { grid-template-columns: 1fr; gap: 16px; }
+  .skill-grid { gap: 14px; }
+  .card { padding: 18px; }
+  .project-body { padding: 16px; }
+  .timeline { padding-left: 24px; }
+  .contact-list { gap: 10px; }
+  .footer-inner { justify-content: center; text-align: center; }
+  .orb { filter: blur(60px); }
 }

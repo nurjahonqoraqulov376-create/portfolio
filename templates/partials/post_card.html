@@ -1,5 +1,5 @@
 {% load portfolio_extras %}
-<article class="card reveal">
+<article class="card reveal" style="--i:{{ forloop.counter0|default:0 }}">
   <div class="post-meta">
     <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"d M Y" }}</time>
     <span>{{ post.reading_time }} min</span>

@@ -3,7 +3,6 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
-from blog.models import Post
 from projects.models import Project
 
 
@@ -12,7 +11,8 @@ class StaticSitemap(Sitemap):
     priority = 1.0
 
     def items(self):
-        return ["core:home", "projects:list", "blog:list"]
+        # Blog hozircha yashirilgan — maqola paydo bo'lganda "blog:list" qo'shiladi
+        return ["core:home", "projects:list"]
 
     def location(self, item):
         return reverse(item)
@@ -29,19 +29,7 @@ class ProjectSitemap(Sitemap):
         return obj.created_at
 
 
-class PostSitemap(Sitemap):
-    changefreq = "weekly"
-    priority = 0.6
-
-    def items(self):
-        return Post.published.all()
-
-    def lastmod(self, obj):
-        return obj.published_at
-
-
 SITEMAPS = {
     "static": StaticSitemap,
     "projects": ProjectSitemap,
-    "posts": PostSitemap,
 }

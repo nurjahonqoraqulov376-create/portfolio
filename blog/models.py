@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.i18n import TranslatedMixin, translated
+from core.models import validate_upload_size
 
 
 class PublishedManager(models.Manager):
@@ -29,7 +30,9 @@ class Post(TranslatedMixin):
     body_uz = models.TextField("Matn (uz)")
     body_en = models.TextField("Matn (en)", blank=True)
 
-    cover = models.ImageField("Rasm", upload_to="blog/", blank=True)
+    cover = models.ImageField(
+        "Rasm", upload_to="blog/", blank=True, validators=[validate_upload_size]
+    )
     tags = models.ManyToManyField(
         "projects.Technology", related_name="posts", verbose_name="Teglar", blank=True
     )
