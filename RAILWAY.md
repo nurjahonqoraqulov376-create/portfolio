@@ -104,7 +104,20 @@ cp -r media/* deploy_seed/media/
 Diqqat: bu papka **boshlang'ich** kontent uchun. Sayt ishga tushgach, kontentni
 serverdagi admin panel orqali tahrirlaysiz — `deploy_seed/` endi tegmaydi.
 
-## 6. Xarajatni kamaytirish
+## 6. Qayta deploy qilish
+
+Kod o'zgargandan keyin:
+
+```bash
+git add -A && git commit -m "..." && git push
+RAILWAY_TOKEN=<project token> railway up -s portfolio --ci
+```
+
+GitHub'ni Railway'ga ulasangiz (dashboard → service → Settings → Source →
+Connect Repo), `railway up` ham kerak bo'lmaydi: har `git push` o'zi deploy
+bo'ladi. Buni project token bilan qilib bo'lmaydi, dashboarddan bosasiz.
+
+## 7. Xarajatni kamaytirish
 
 Portfolio saytiga tashrif kam bo'ladi, shuning uchun
 Service → **Settings → Serverless (App Sleeping)** ni yoqing. Hech kim
@@ -120,7 +133,7 @@ kirmaganda service uxlaydi va $5 lik kreditdan deyarli yemaydi.
 - `config/urls.py` — yuklangan rasmlar produksiyada ham beriladi.
 - `Procfile` — deployda `migrate` + `collectstatic`, so'ng gunicorn.
 - `.python-version` — Python 3.13 (Django 6 uchun kerak).
-- `railway.json`, `.railwayignore` — build sozlamalari va yuborilmaydigan fayllar.
+- `.railwayignore` — serverga yuborilmaydigan fayllar (`.env`, lokal baza, `media/`).
 - `core/management/commands/bootstrap.py` — birinchi ishga tushishda admin va
   boshlang'ich kontentni tayyorlaydi.
 - `deploy_seed/` — lokal bazadan olingan boshlang'ich kontent va media fayllar.
