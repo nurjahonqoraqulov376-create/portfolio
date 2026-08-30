@@ -100,7 +100,9 @@ if not DEBUG:
 # --------------------------------------------------------------- ilovalar
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # Standart admin o'rniga o'zimizniki — bosh sahifasida statistika va
+    # bildirishnomalar paneli bor (core/admin_site.py).
+    "core.admin_apps.PortfolioAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -262,6 +264,12 @@ CACHES = {
 
 # Kontakt formasi orqali kelgan xabar haqida shu manzilga ogohlantirish yuboriladi
 CONTACT_NOTIFY_EMAIL = env("CONTACT_NOTIFY_EMAIL")
+
+# Kontakt formasidan kelgan xabar Telegram'ga ham yuboriladi (ikkalasi
+# to'ldirilgan bo'lsa). Sozlash bo'yicha izoh: core/telegram.py.
+# CHAT_ID — raqam; `@username` bu yerda ishlamaydi.
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = env("TELEGRAM_CHAT_ID")
 
 # Bitta IP soatiga nechta xabar yubora oladi. Bu — spam va "email bombing"
 # himoyasi: har xabar Gmail'ga xat yuboradi, cheklovsiz qoldirib bo'lmaydi.

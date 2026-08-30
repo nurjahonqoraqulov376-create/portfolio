@@ -1,0 +1,569 @@
+/* =========================================================================
+   Portfolio admin — saytning o'zi bilan bir xil ko'rinish.
+   Ranglar static/css/style.css dagi tokenlardan olingan.
+
+   Django admin'ining o'z CSS o'zgaruvchilari bor (--body-bg, --primary ...).
+   Biz ularni qayta belgilaymiz — shunda Django o'zi chizadigan qismlar
+   (formalar, tugmalar, ro'yxatlar) ham avtomatik mos rangga o'tadi va
+   har bir elementni qo'lda bo'yab chiqishga hojat qolmaydi.
+   ========================================================================= */
+
+:root,
+html[data-theme="dark"],
+html[data-theme="light"] {
+  /* --- saytdagi palitra --- */
+  --pf-bg: #0b1020;
+  --pf-bg-soft: #121a33;
+  --pf-card: #151d38;
+  --pf-border: #24304f;
+  --pf-text: #e8ecf7;
+  --pf-muted: #9aa6c4;
+  --pf-accent: #6ea8fe;
+  --pf-accent-2: #a78bfa;
+  --pf-success: #34d399;
+  --pf-warning: #facc15;
+  --pf-danger: #f87171;
+  --pf-radius: 14px;
+  --pf-radius-sm: 10px;
+  --pf-shadow: 0 18px 40px rgba(2, 6, 23, 0.45);
+
+  /* --- Django admin o'zgaruvchilarini almashtiramiz --- */
+  --primary: var(--pf-accent);
+  --secondary: var(--pf-bg-soft);
+  --accent: var(--pf-accent-2);
+  --primary-fg: #0b1020;
+
+  --body-fg: var(--pf-text);
+  --body-bg: var(--pf-bg);
+  --body-quiet-color: var(--pf-muted);
+  --body-loud-color: #ffffff;
+
+  --header-color: var(--pf-text);
+  --header-branding-color: var(--pf-accent);
+  --header-bg: var(--pf-bg-soft);
+  --header-link-color: var(--pf-text);
+
+  --breadcrumbs-fg: var(--pf-muted);
+  --breadcrumbs-link-fg: var(--pf-accent);
+  --breadcrumbs-bg: transparent;
+
+  --link-fg: var(--pf-accent);
+  --link-hover-color: var(--pf-accent-2);
+  --link-selected-fg: var(--pf-accent-2);
+
+  --hairline-color: var(--pf-border);
+  --border-color: var(--pf-border);
+
+  --error-fg: var(--pf-danger);
+  --message-success-bg: rgba(52, 211, 153, 0.14);
+  --message-warning-bg: rgba(250, 204, 21, 0.14);
+  --message-error-bg: rgba(248, 113, 113, 0.14);
+
+  --darkened-bg: var(--pf-bg-soft);
+  --selected-bg: rgba(110, 168, 254, 0.10);
+  --selected-row: rgba(110, 168, 254, 0.14);
+
+  --button-fg: #0b1020;
+  --button-bg: var(--pf-accent);
+  --button-hover-bg: #8ab8ff;
+  --default-button-bg: var(--pf-accent);
+  --default-button-hover-bg: #8ab8ff;
+  --close-button-bg: #33405f;
+  --close-button-hover-bg: #46557a;
+  --delete-button-bg: var(--pf-danger);
+  --delete-button-hover-bg: #fb8f8f;
+
+  --object-tools-bg: var(--pf-accent-2);
+  --object-tools-fg: #ffffff;
+  --object-tools-hover-bg: #b9a2ff;
+
+  --font-family-primary: system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-family-monospace: ui-monospace, SFMono-Regular, "Cascadia Code",
+    Consolas, monospace;
+}
+
+/* ------------------------------------------------------------------ asos */
+
+body {
+  background: var(--pf-bg);
+  color: var(--pf-text);
+  /* Saytdagi kabi yumshoq nur — tekis fon quruq ko'rinmasin */
+  background-image:
+    radial-gradient(900px 500px at 12% -10%, rgba(110, 168, 254, 0.16), transparent 60%),
+    radial-gradient(800px 460px at 88% 0%, rgba(167, 139, 250, 0.14), transparent 60%);
+  background-attachment: fixed;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------- sarlavha */
+
+#header {
+  background: rgba(18, 26, 51, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--pf-border);
+  box-shadow: none;
+  padding: 14px 32px;
+}
+
+#branding h1,
+#site-name a {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+#branding h1 a:link,
+#branding h1 a:visited {
+  background: linear-gradient(92deg, var(--pf-accent), var(--pf-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* O'qilmagan bildirishnomalar nishoni — qaysi sahifada bo'lsangiz ham ko'rinadi */
+.pf-bell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  margin-inline-end: 6px;
+  border: 1px solid var(--pf-border);
+  border-radius: 999px;
+  background: rgba(110, 168, 254, 0.10);
+  color: var(--pf-text) !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-bell:hover {
+  background: rgba(110, 168, 254, 0.2);
+  border-color: var(--pf-accent);
+}
+
+.pf-bell__count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--pf-danger);
+  color: #1a0606;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.pf-bell--empty .pf-bell__count {
+  background: var(--pf-border);
+  color: var(--pf-muted);
+}
+
+/* ------------------------------------------------------------- navigatsiya */
+
+div.breadcrumbs {
+  background: transparent;
+  border-bottom: 1px solid var(--pf-border);
+  padding: 12px 32px;
+  font-size: 13px;
+}
+
+#content {
+  padding: 24px 32px 48px;
+}
+
+/* -------------------------------------------------------------- modullar */
+
+.module,
+.dashboard .module,
+#content-related .module {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  box-shadow: var(--pf-shadow);
+  overflow: hidden;
+}
+
+.module > h2,
+.module caption,
+.inline-group h2 {
+  background: linear-gradient(92deg, rgba(110, 168, 254, 0.18), rgba(167, 139, 250, 0.14));
+  color: var(--pf-text);
+  border-bottom: 1px solid var(--pf-border);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+}
+
+.module h3 {
+  color: var(--pf-muted);
+}
+
+/* ---------------------------------------------------------------- jadval */
+
+#changelist table thead th {
+  background: var(--pf-bg-soft);
+  border-bottom: 1px solid var(--pf-border);
+}
+
+#changelist table thead th a {
+  color: var(--pf-muted);
+  font-weight: 600;
+}
+
+#changelist tbody tr {
+  transition: background 0.15s ease;
+}
+
+#changelist tbody tr:hover {
+  background: rgba(110, 168, 254, 0.07);
+}
+
+td,
+th {
+  border-bottom: 1px solid var(--pf-border);
+  padding: 11px 12px;
+}
+
+/* Django o'zi beradigan zebra ranglar qorong'i fonda oq bo'lib qoladi */
+.row1,
+.row2,
+tr.row1 td,
+tr.row2 td {
+  background: transparent;
+}
+
+#changelist-filter {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+}
+
+#changelist-filter h2,
+#changelist-filter h3 {
+  background: transparent;
+  color: var(--pf-muted);
+}
+
+/* ---------------------------------------------------------------- forma */
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+textarea,
+select,
+.vTextField {
+  background: var(--pf-bg-soft);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-sm);
+  color: var(--pf-text);
+  padding: 9px 11px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.vTextField:focus {
+  border-color: var(--pf-accent);
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.18);
+}
+
+fieldset.module {
+  box-shadow: none;
+}
+
+.submit-row {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  padding: 14px 16px;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  border: 0;
+  border-radius: var(--pf-radius-sm);
+  font-weight: 700;
+  padding: 9px 16px;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+.submit-row input:hover,
+a.button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.submit-row input.default {
+  background: linear-gradient(92deg, var(--pf-accent), var(--pf-accent-2));
+  color: #0b1020;
+}
+
+/* -------------------------------------------------------------- xabarlar */
+
+ul.messagelist li {
+  border-radius: var(--pf-radius-sm);
+  border: 1px solid var(--pf-border);
+  color: var(--pf-text);
+  padding: 12px 16px;
+}
+
+/* ------------------------------------------------------------ login sahifa */
+
+body.login #container {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  box-shadow: var(--pf-shadow);
+  overflow: hidden;
+}
+
+body.login #header {
+  border-radius: 0;
+}
+
+/* ====================================================== o'z komponentlarimiz */
+
+/* --- statistika kartalari (admin bosh sahifa) --- */
+
+.pf-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.pf-card {
+  display: block;
+  position: relative;
+  padding: 18px;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  background: var(--pf-card);
+  box-shadow: var(--pf-shadow);
+  color: var(--pf-text) !important;
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.pf-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--pf-accent);
+}
+
+/* Yuqoridagi ingichka rangli chiziq kartaning "kayfiyatini" bildiradi */
+.pf-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--pf-tone, var(--pf-border));
+}
+
+.pf-card--accent { --pf-tone: linear-gradient(90deg, var(--pf-accent), var(--pf-accent-2)); }
+.pf-card--success { --pf-tone: var(--pf-success); }
+.pf-card--danger { --pf-tone: var(--pf-danger); }
+.pf-card--warning { --pf-tone: var(--pf-warning); }
+.pf-card--muted { --pf-tone: var(--pf-border); }
+
+.pf-card__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.pf-card__value {
+  margin-top: 8px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.pf-card__label {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.pf-card__hint {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--pf-muted);
+}
+
+/* --- bildirishnomalar ro'yxati (admin bosh sahifa) --- */
+
+.pf-panel {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  box-shadow: var(--pf-shadow);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.pf-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pf-border);
+  background: linear-gradient(92deg, rgba(110, 168, 254, 0.18), rgba(167, 139, 250, 0.14));
+}
+
+.pf-panel__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-panel__link {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pf-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pf-feed__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pf-border);
+  transition: background 0.15s ease;
+}
+
+.pf-feed__item:last-child { border-bottom: 0; }
+.pf-feed__item:hover { background: rgba(110, 168, 254, 0.06); }
+
+/* O'qilmaganini chap chetidagi rangli chiziq bildiradi */
+.pf-feed__item--new {
+  box-shadow: inset 3px 0 0 var(--pf-accent);
+  background: rgba(110, 168, 254, 0.05);
+}
+
+.pf-feed__icon {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.pf-feed__main { min-width: 0; flex: 1; }
+
+.pf-feed__title {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--pf-text) !important;
+  text-decoration: none;
+}
+
+.pf-feed__title:hover { color: var(--pf-accent) !important; }
+
+.pf-feed__body {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--pf-muted);
+  /* Uzun matn kartani cho'zib yubormasin */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pf-feed__time {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  color: var(--pf-muted);
+  white-space: nowrap;
+}
+
+.pf-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--pf-muted);
+  font-size: 13px;
+}
+
+/* --- turkum nishonlari (bildirishnomalar ro'yxatida) --- */
+
+.pf-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pf-badge--accent {
+  background: rgba(110, 168, 254, 0.16);
+  border-color: rgba(110, 168, 254, 0.4);
+  color: #bcd6ff;
+}
+
+.pf-badge--success {
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #8ff0cd;
+}
+
+.pf-badge--danger {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #ffb4b4;
+}
+
+.pf-badge--warning {
+  background: rgba(250, 204, 21, 0.14);
+  border-color: rgba(250, 204, 21, 0.4);
+  color: #f6e08a;
+}
+
+.pf-badge--muted {
+  background: rgba(154, 166, 196, 0.12);
+  border-color: var(--pf-border);
+  color: var(--pf-muted);
+}
+
+.pf-unread { font-weight: 800; }
+
+.pf-link { font-weight: 600; }
+
+/* --------------------------------------------------------------- mobil */
+
+@media (max-width: 767px) {
+  #header { padding: 12px 16px; }
+  #content { padding: 16px; }
+  div.breadcrumbs { padding: 10px 16px; }
+  .pf-cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .pf-card__value { font-size: 26px; }
+}

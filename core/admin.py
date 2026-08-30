@@ -1,17 +1,17 @@
 from django.contrib import admin, messages
+from django.utils.html import format_html
 
 from .models import (
     ContactMessage,
     Education,
     Experience,
+    Notification,
     Profile,
     Skill,
     SkillCategory,
 )
 
-admin.site.site_header = "Portfolio boshqaruvi"
-admin.site.site_title = "Portfolio admin"
-admin.site.index_title = "Sayt kontenti"
+# Sarlavhalar `core/admin_site.py` da (PortfolioAdminSite) belgilangan.
 
 
 @admin.register(Profile)
@@ -102,3 +102,74 @@ class ContactMessageAdmin(admin.ModelAdmin):
     def mark_as_unread(self, request, queryset):
         updated = queryset.update(is_read=False)
         self.message_user(request, f"{updated} ta xabar o'qilmagan deb belgilandi.")
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    """
+    Bildirishnomalar markazi.
+
+    Bu yerga sayt hodisalari tushadi: yangi xabar, CV yuklab olindi, sayt
+    xatosi, spam urinishi. Telegram'ga yuborilgani bilan bir xil ma'lumot,
+    lekin bu yerda qidirsa, filtrlasa va arxiv sifatida saqlasa bo'ladi.
+    """
+
+    list_display = ["badge", "short_title", "preview", "created_at", "read_mark"]
+    list_display_links = ["short_title"]
+    list_filter = ["kind", "is_read", "created_at"]
+    search_fields = ["title", "body"]
+    readonly_fields = ["kind", "title", "body", "open_link", "created_at"]
+    fields = ["kind", "title", "body", "open_link", "created_at", "is_read"]
+    date_hierarchy = "created_at"
+    actions = ["mark_as_read", "mark_as_unread"]
+    list_per_page = 30
+
+    def has_add_permission(self, request):
+        # Bildirishnomalarni sayt o'zi yaratadi, qo'lda qo'shilmaydi
+        return False
+
+    @admin.display(description="Turi", ordering="kind")
+    def badge(self, obj):
+        return format_html(
+            '<span class="pf-badge pf-badge--{}">{} {}</span>',
+            obj.tone,
+            obj.icon,
+            obj.get_kind_display(),
+        )
+
+    @admin.display(description="Sarlavha", ordering="title")
+    def short_title(self, obj):
+        # O'qilmaganlari qalin — ro'yxatda darhol ko'zga tashlanadi
+        css = "pf-unread" if not obj.is_read else ""
+        return format_html('<span class="{}">{}</span>', css, obj.title)
+
+    @admin.display(description="Tafsilot")
+    def preview(self, obj):
+        text = " ".join(obj.body.split())
+        return text[:90] + "…" if len(text) > 90 else text
+
+    @admin.display(description="Holat", boolean=True, ordering="is_read")
+    def read_mark(self, obj):
+        return obj.is_read
+
+    @admin.display(description="Bog'liq sahifa")
+    def open_link(self, obj):
+        if not obj.link:
+            return "—"
+        return format_html('<a class="pf-link" href="{}">Ochish →</a>', obj.link)
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        # Ochilgan bildirishnoma avtomatik o'qilgan bo'ladi — qo'lda
+        # belgilab yurish keraksiz ish
+        Notification.objects.filter(pk=object_id, is_read=False).update(is_read=True)
+        return super().change_view(request, object_id, form_url, extra_context)
+
+    @admin.action(description="Ko'rilgan deb belgilash")
+    def mark_as_read(self, request, queryset):
+        updated = queryset.update(is_read=True)
+        self.message_user(request, f"{updated} ta bildirishnoma ko'rildi.", messages.SUCCESS)
+
+    @admin.action(description="Ko'rilmagan deb belgilash")
+    def mark_as_unread(self, request, queryset):
+        updated = queryset.update(is_read=False)
+        self.message_user(request, f"{updated} ta bildirishnoma ko'rilmagan qilindi.")

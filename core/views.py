@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -14,9 +14,17 @@ from django.views.generic import TemplateView
 
 from projects.models import Project, Technology
 
+from . import notifications
 from .forms import ContactForm
 from .i18n import translated
-from .models import Education, Experience, Skill, SkillCategory
+from .models import (
+    Education,
+    Experience,
+    Notification,
+    Profile,
+    Skill,
+    SkillCategory,
+)
 from .translations import ui
 
 logger = logging.getLogger(__name__)
@@ -114,29 +122,58 @@ def contact_view(request):
 
     if _contact_rate_exceeded(request):
         logger.warning("Kontakt formasi rate limit: %s", _client_ip(request))
+        notifications.notify(
+            Notification.KIND_SPAM,
+            "Kontakt formasi limitga urildi",
+            "Bitta IP juda ko'p xabar yubormoqchi bo'ldi.",
+            request=request,
+        )
         messages.error(request, ui("form_too_many"))
         return redirect(reverse("core:home") + "#contact")
 
     form = ContactForm(request.POST)
     if form.is_valid():
         message = form.save()
-        _notify_owner(message)
+        _notify_owner(message, request)
         messages.success(request, ui("form_success"))
         return redirect(reverse("core:home") + "#contact")
+
+    if "honeypot" in form.errors:
+        # Odam ko'rmaydigan maydon to'ldirilgan — deyarli aniq bot
+        notifications.notify(
+            Notification.KIND_SPAM,
+            "Bot aniqlandi (honeypot)",
+            "Yashirin maydon to'ldirilgan — xabar saqlanmadi.",
+            request=request,
+        )
 
     messages.error(request, ui("form_error"))
     # Xatolarni ko'rsatish uchun bosh sahifani o'sha forma bilan qayta chizamiz
     return render(request, "core/home.html", home_context(form=form))
 
 
-def _notify_owner(message):
+def _notify_owner(message, request=None):
     """
-    Yangi xabar haqida egasiga email (sozlanmagan bo'lsa — o'tkazib yuboriladi).
+    Yangi xabar haqida egasini xabardor qilish: admin panel, Telegram, email.
 
-    Xat ketmasa ham forma ishlayveradi: xabar baribir bazada saqlangan va
-    admin panelda ko'rinadi. Shuning uchun xatolik yutiladi, lekin logga yoziladi —
-    aks holda "nega xat kelmadi?" degan savolga javob topib bo'lmaydi.
+    Telegram va email ixtiyoriy — sozlanmagani o'tkazib yuboriladi. Yuborish
+    muvaffaqiyatsiz bo'lsa ham forma ishlayveradi: xabar baribir bazada
+    saqlangan va admin panelda ko'rinadi. Shuning uchun xatolik yutiladi,
+    lekin logga yoziladi — aks holda "nega kelmadi?" degan savolga javob
+    topib bo'lmaydi.
     """
+    notifications.notify(
+        Notification.KIND_MESSAGE,
+        f"{message.name} — {message.subject}",
+        f"✉️ {message.email}\n\n{message.message}",
+        link=reverse("admin:core_contactmessage_change", args=[message.pk]),
+        request=request,
+    )
+    _notify_owner_email(message)
+
+
+def _notify_owner_email(message):
+    """Egasiga email ogohlantirish (CONTACT_NOTIFY_EMAIL bo'sh bo'lsa — yo'q)."""
     recipient = getattr(settings, "CONTACT_NOTIFY_EMAIL", "")
     if not recipient:
         logger.info("CONTACT_NOTIFY_EMAIL bo'sh — ogohlantirish xati yuborilmadi")
@@ -157,6 +194,35 @@ def _notify_owner(message):
         )
     except Exception:
         logger.exception("Kontakt xabari haqida email yuborib bo'lmadi")
+
+
+def resume_download(request):
+    """
+    CV faylini beradi va yuklab olinganini qayd etadi.
+
+    Nega to'g'ridan-to'g'ri `profile.resume.url` emas: media faylga havola
+    bosilganini Django umuman ko'rmaydi. CV yuklab olgan odam — kontakt
+    formasidan yozmasa ham — eng kuchli signal: ish beruvchi sizni tekshiryapti.
+    Shuning uchun havola shu view orqali o'tadi, u faqat hisobga oladi va
+    faylning haqiqiy manziliga yo'naltiradi.
+    """
+    profile = Profile.objects.get_active()
+    if not profile or not profile.resume:
+        raise Http404("CV fayli yuklanmagan.")
+
+    # Bitta odam sahifani bir necha marta yangilasa, har safar bildirishnoma
+    # kelmasin — bir soatlik oyna ichida IP bo'yicha bir marta.
+    key = f"resume-seen:{_client_ip(request)}"
+    if not cache.get(key):
+        cache.set(key, 1, timeout=3600)
+        notifications.notify(
+            Notification.KIND_RESUME,
+            "CV yuklab olindi",
+            f"Kimdir «{profile.full_name}» CV faylini yuklab oldi.",
+            request=request,
+        )
+
+    return redirect(profile.resume.url)
 
 
 def projects_api(request):
@@ -215,5 +281,29 @@ def server_error(request):
     """
     from django.template import loader
 
+    _report_server_error(request)
+
     html = loader.render_to_string("500.html")
     return HttpResponse(html, status=500)
+
+
+def _report_server_error(request):
+    """
+    Sayt yiqilganini Telegram'ga va admin panelga bildiradi.
+
+    Nega kerak: Railway'dagi sayt buzilsa, buni faqat mehmon ko'radi va
+    hech kimga aytmaydi. Bu yerda esa xato darhol telefonga tushadi.
+
+    Nega o'z ichida `try`: bu funksiya xato ishlov berish paytida chaqiriladi.
+    Agar u ham yiqilsa, mehmon 500 sahifasi o'rniga bo'sh ekran ko'radi.
+    Ayniqsa baza yiqilgan bo'lsa — bildirishnomani yozib bo'lmaydi.
+    """
+    try:
+        notifications.notify(
+            Notification.KIND_ERROR,
+            "Saytda xatolik (500)",
+            f"Sahifa: {request.get_full_path()}",
+            request=request,
+        )
+    except Exception:
+        logger.exception("Xatolik haqida bildirishnoma yuborib bo'lmadi")

@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{# Django admin'ining tashqi ko'rinishini saytnikiga moslaymiz. #}
+
+{% block title %}{{ title }} | {{ site_title|default:"Portfolio admin" }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/portfolio-admin.css' %}">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}">
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">{{ site_header|default:"Portfolio boshqaruvi" }}</a>
+  </h1>
+{% endblock %}
+
+{% block usertools %}
+  {% if has_permission %}
+    <div id="user-tools">
+      {# O'qilmagan bildirishnomalar nishoni — har sahifada ko'rinadi #}
+      <a class="pf-bell {% if not unread_notifications %}pf-bell--empty{% endif %}"
+         href="{% url 'admin:core_notification_changelist' %}?is_read__exact=0"
+         title="Bildirishnomalar">
+        🔔 <span class="pf-bell__count">{{ unread_notifications|default:"0" }}</span>
+      </a>
+      {% firstof user.get_short_name user.get_username as user_display %}
+      Salom, <strong>{{ user_display }}</strong>.
+      <a href="{% url 'core:home' %}" target="_blank" rel="noopener">Saytni ko'rish</a> /
+      {% if user.has_usable_password %}
+        <a href="{% url 'admin:password_change' %}">Parolni o'zgartirish</a> /
+      {% endif %}
+      <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Chiqish</button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

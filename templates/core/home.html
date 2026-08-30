@@ -33,7 +33,7 @@
         <a class="btn btn--primary" href="{% url 'projects:list' %}">{{ t.view_projects }}</a>
         <a class="btn btn--ghost" href="#contact">{{ t.contact_me }}</a>
         {% if profile.resume %}
-          <a class="btn btn--ghost" href="{{ profile.resume.url }}" download>{{ t.download_cv }}</a>
+          <a class="btn btn--ghost" href="{% url 'core:resume_download' %}">{{ t.download_cv }}</a>
         {% endif %}
       </div>
 

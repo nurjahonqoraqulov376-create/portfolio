@@ -228,3 +228,90 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name}: {self.subject}"
+
+
+class NotificationQuerySet(models.QuerySet):
+    def unread(self):
+        return self.filter(is_read=False)
+
+    def important(self):
+        """Statistika va spam kabi "shovqin" emas, e'tibor talab qiladiganlari."""
+        return self.filter(kind__in=Notification.IMPORTANT_KINDS)
+
+
+class Notification(models.Model):
+    """
+    Admin panelda ko'rinadigan bildirishnoma.
+
+    Nega alohida model: sayt hodisalari (yangi xabar, CV yuklab olindi, xatolik,
+    spam urinishi) turli joyda sodir bo'ladi. Ularning har biri o'z modeliga ega
+    emas — xatolikni saqlaydigan jadval yo'q, CV yuklashniki ham. Shu jadval
+    hammasini bitta oqimga yig'adi, admin panel esa uni "bildirishnomalar
+    markazi" sifatida ko'rsatadi.
+
+    Telegram'ga yuborish bilan bir vaqtda yoziladi: Telegram ishlamay qolsa
+    ham hodisa yo'qolmaydi, admin panelda turaveradi.
+    """
+
+    KIND_MESSAGE = "message"
+    KIND_RESUME = "resume"
+    KIND_ERROR = "error"
+    KIND_SPAM = "spam"
+    KIND_INFO = "info"
+
+    KIND_CHOICES = [
+        (KIND_MESSAGE, "Yangi xabar"),
+        (KIND_RESUME, "CV yuklab olindi"),
+        (KIND_ERROR, "Sayt xatosi"),
+        (KIND_SPAM, "Spam urinishi"),
+        (KIND_INFO, "Ma'lumot"),
+    ]
+
+    # Telefon jiringlashi kerak bo'lganlari (qolganlari Telegram'ga jimgina ketadi)
+    IMPORTANT_KINDS = [KIND_MESSAGE, KIND_RESUME, KIND_ERROR]
+
+    # Admin panelda rang va belgi shu yerdan olinadi — shablonda `if` tizmasi
+    # yozib o'tirmaslik uchun.
+    KIND_STYLES = {
+        KIND_MESSAGE: ("💬", "accent"),
+        KIND_RESUME: ("📄", "success"),
+        KIND_ERROR: ("🔴", "danger"),
+        KIND_SPAM: ("🛡", "warning"),
+        KIND_INFO: ("ℹ️", "muted"),
+    }
+
+    kind = models.CharField("Turi", max_length=20, choices=KIND_CHOICES, default=KIND_INFO)
+    title = models.CharField("Sarlavha", max_length=200)
+    body = models.TextField("Tafsilot", blank=True)
+    # Bog'liq sahifaga havola: xabar bo'lsa — o'sha xabarning admin sahifasi,
+    # xatolik bo'lsa — yiqilgan sahifa manzili.
+    link = models.CharField("Havola", max_length=500, blank=True)
+    is_read = models.BooleanField("Ko'rilgan", default=False)
+    created_at = models.DateTimeField("Vaqti", auto_now_add=True)
+
+    objects = NotificationQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Bildirishnoma"
+        verbose_name_plural = "Bildirishnomalar"
+        ordering = ["-created_at"]
+        indexes = [
+            # Admin har sahifada "nechta o'qilmagan" deb so'raydi
+            models.Index(fields=["is_read", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def icon(self):
+        return self.KIND_STYLES.get(self.kind, ("•", "muted"))[0]
+
+    @property
+    def tone(self):
+        """CSS klass uchun rang nomi: accent / success / danger / warning / muted."""
+        return self.KIND_STYLES.get(self.kind, ("•", "muted"))[1]
+
+    @property
+    def is_important(self):
+        return self.kind in self.IMPORTANT_KINDS

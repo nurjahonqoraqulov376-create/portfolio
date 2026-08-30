@@ -1,0 +1,57 @@
+{% extends "admin/index.html" %}
+
+{#
+  Admin bosh sahifasi: standart modellar ro'yxatidan oldin statistika
+  kartalari va so'nggi bildirishnomalar chiqadi.
+
+  Ma'lumot `core/admin_site.py` dagi `PortfolioAdminSite.index()` dan keladi.
+  Django shablonni o'z ilovasidan qidirgani uchun `admin/index.html` ni
+  o'zidan meros qilib olsa bo'ladi (DIRS shablonlari APP_DIRS dan oldin
+  qaraladi, shuning uchun bu fayl "o'zini" emas, Django'nikini kengaytiradi).
+#}
+
+{% block content %}
+  {% if dashboard_cards %}
+    <div class="pf-cards">
+      {% for card in dashboard_cards %}
+        <a class="pf-card pf-card--{{ card.tone }}" href="{{ card.url }}">
+          <div class="pf-card__icon">{{ card.icon }}</div>
+          <div class="pf-card__value">{{ card.value }}</div>
+          <div class="pf-card__label">{{ card.label }}</div>
+          <div class="pf-card__hint">{{ card.hint }}</div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="pf-panel">
+    <div class="pf-panel__head">
+      <span class="pf-panel__title">🔔 So'nggi hodisalar</span>
+      <a class="pf-panel__link" href="{{ notifications_url }}">Hammasi →</a>
+    </div>
+
+    {% if recent_notifications %}
+      <ul class="pf-feed">
+        {% for item in recent_notifications %}
+          <li class="pf-feed__item {% if not item.is_read %}pf-feed__item--new{% endif %}">
+            <span class="pf-feed__icon">{{ item.icon }}</span>
+            <span class="pf-feed__main">
+              <a class="pf-feed__title"
+                 href="{% url 'admin:core_notification_change' item.pk %}">{{ item.title }}</a>
+              {% if item.body %}<div class="pf-feed__body">{{ item.body|linebreaksbr }}</div>{% endif %}
+            </span>
+            <span class="pf-feed__time" title="{{ item.created_at }}">
+              {{ item.created_at|timesince }} oldin
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="pf-empty">
+        Hozircha hodisa yo'q. Saytga xabar kelsa yoki CV yuklab olinsa — shu yerda paydo bo'ladi.
+      </p>
+    {% endif %}
+  </div>
+
+  {{ block.super }}
+{% endblock %}

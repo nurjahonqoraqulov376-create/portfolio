@@ -43,6 +43,8 @@ Service → **Variables** bo'limiga quyidagilarni qo'ying:
 | `TRUST_PROXY_IP` | `True` | Railway proxy ortida turadi |
 | `SITE_DOMAIN` | `xxx.up.railway.app` | domen olingandan keyin |
 | `DEFAULT_FROM_EMAIL` | masalan `portfolio@nurjahon.uz` | |
+| `TELEGRAM_BOT_TOKEN` | @BotFather bergan token | kontakt formasi xabari Telegram'ga tushadi |
+| `TELEGRAM_CHAT_ID` | raqamli ID (`python manage.py telegram_chat_id`) | `@username` emas, aynan raqam |
 | `CONTACT_NOTIFY_EMAIL` | o'z pochtangiz | kontakt formasi xabarlari |
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Gmail App Password | bo'sh qolsa xat yuborilmaydi, sayt ishlayveradi |
 | `DJANGO_SUPERUSER_USERNAME` | masalan `nurjahon` | birinchi deployda admin yaratiladi |
