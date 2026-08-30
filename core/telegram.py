@@ -34,7 +34,23 @@ API_URL = "https://api.telegram.org/bot{token}/{method}"
 # yig'indi oshib ketishi mumkin — shuning uchun kesib qo'yamiz.
 MAX_MESSAGE_LENGTH = 4000
 
-TIMEOUT = 10  # soniya
+# Yuborish fon oqimida ketadi, lekin osilib qolgan oqim ham bepul emas —
+# har biri xotira va ulanish ushlab turadi. Telegram sog'lom bo'lsa javob
+# bir soniyada keladi, shuning uchun 8 soniya yetarlicha saxiy.
+TIMEOUT = 8  # soniya
+
+
+def _scrub(text):
+    """
+    Matndan bot tokenini olib tashlaydi.
+
+    Nega kerak: xatolik matnlari log'ga yoziladi, log esa Railway panelida
+    ochiq turadi. Token sizib chiqsa, uni bilgan odam sizning botingiz
+    nomidan xabar yubora oladi va kelgan xabarlarni o'qiy oladi.
+    """
+    token = getattr(settings, "TELEGRAM_BOT_TOKEN", "")
+    text = str(text)
+    return text.replace(token, "***TOKEN***") if token else text
 
 
 def _escape(text):
@@ -135,14 +151,20 @@ def send_notification(kind, title, body="", link="", quiet=False):
         # Telegram xato sababini javob tanasida tushuntiradi — logga chiqaramiz,
         # aks holda "nega kelmadi?" degan savolga javob topib bo'lmaydi.
         detail = error.read().decode("utf-8", "replace")[:300]
-        logger.error("Telegram xatosi (HTTP %s): %s", error.code, detail)
+        logger.error("Telegram xatosi (HTTP %s): %s", error.code, _scrub(detail))
         return False
-    except Exception:
-        logger.exception("Telegram'ga xabar yuborib bo'lmadi")
+    except Exception as error:
+        # `logger.exception` emas: traceback ichida so'rov URL'i — ya'ni bot
+        # tokeni — ko'rinib qolishi mumkin. Xato turi va tozalangan matni yetarli.
+        logger.error(
+            "Telegram'ga xabar yuborib bo'lmadi: %s: %s",
+            type(error).__name__,
+            _scrub(error),
+        )
         return False
 
     if not response.get("ok"):
-        logger.error("Telegram javobi: %s", response)
+        logger.error("Telegram javobi: %s", _scrub(response))
         return False
 
     return True

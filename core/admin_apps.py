@@ -4,7 +4,7 @@ Admin ilovasining konfiguratsiyasi.
 INSTALLED_APPS da `django.contrib.admin` o'rniga shu tursa, Django
 standart `admin.site` o'rniga `default_site` dagi klassni ishlatadi.
 
-Nega `core/apps.py` da emas: bitta modulda ikkita AppConfig turса,
+Nega `core/apps.py` da emas: bitta modulda ikkita AppConfig tursa,
 Django "core" ilovasi uchun qaysi biri asosiy ekanini bilolmay xato beradi.
 """
 

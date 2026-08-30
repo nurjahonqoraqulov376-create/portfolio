@@ -118,8 +118,8 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display_links = ["short_title"]
     list_filter = ["kind", "is_read", "created_at"]
     search_fields = ["title", "body"]
-    readonly_fields = ["kind", "title", "body", "open_link", "created_at"]
-    fields = ["kind", "title", "body", "open_link", "created_at", "is_read"]
+    readonly_fields = ["kind", "title", "body", "open_link", "created_at", "repeat_count"]
+    fields = ["kind", "title", "body", "open_link", "repeat_count", "created_at", "is_read"]
     date_hierarchy = "created_at"
     actions = ["mark_as_read", "mark_as_unread"]
     list_per_page = 30
@@ -141,6 +141,15 @@ class NotificationAdmin(admin.ModelAdmin):
     def short_title(self, obj):
         # O'qilmaganlari qalin — ro'yxatda darhol ko'zga tashlanadi
         css = "pf-unread" if not obj.is_read else ""
+        if obj.repeat_count > 1:
+            # Takrorlangan hodisa yangi qator ochmaydi, shuning uchun necha
+            # marta bo'lgani shu yerda ko'rinishi kerak
+            return format_html(
+                '<span class="{}">{}</span> <span class="pf-badge pf-badge--warning">×{}</span>',
+                css,
+                obj.title,
+                obj.repeat_count,
+            )
         return format_html('<span class="{}">{}</span>', css, obj.title)
 
     @admin.display(description="Tafsilot")

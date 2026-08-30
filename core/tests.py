@@ -157,3 +157,192 @@ class SeedCommandTests(TestCase):
         call_command("seed_portfolio", stdout=out)
         self.assertEqual(Profile.objects.count(), first_count)
         self.assertEqual(first_count, 1)
+
+
+class NotificationSafetyTests(TestCase):
+    """
+    Bildirishnoma tizimi hujum paytida ham xotirjam qolishi kerak.
+
+    Bu testlar aynan quyidagi xavflarga qarshi yozilgan:
+      * bot formaga urganda har urinishga alohida yozuv va Telegram xabari
+        ketishi (o'zimizni o'zimiz DDoS qilish);
+      * jadvalning cheksiz o'sib, diskni to'ldirib qo'yishi;
+      * bildirishnoma yaratishdagi nosozlik mehmonning so'rovini yiqitishi.
+    """
+
+    def setUp(self):
+        from core.models import Notification
+
+        Notification.objects.all().delete()
+
+    def test_repeated_spam_creates_single_row(self):
+        from core.models import Notification
+        from core.notifications import notify
+
+        for _ in range(50):
+            notify(Notification.KIND_SPAM, "Bot aniqlandi", "sinov")
+
+        self.assertEqual(Notification.objects.count(), 1)
+        self.assertEqual(Notification.objects.first().repeat_count, 50)
+
+    def test_repeated_errors_are_grouped(self):
+        from core.models import Notification
+        from core.notifications import notify
+
+        for _ in range(20):
+            notify(Notification.KIND_ERROR, "Saytda xatolik (500)", "/sinov/")
+
+        self.assertEqual(Notification.objects.count(), 1)
+
+    def test_contact_messages_are_never_grouped(self):
+        """Har bir haqiqiy xabar qimmatli — ular birlashtirilmasligi kerak."""
+        from core.models import Notification
+        from core.notifications import notify
+
+        for i in range(3):
+            notify(Notification.KIND_MESSAGE, f"Mehmon {i}", "salom")
+
+        self.assertEqual(Notification.objects.count(), 3)
+
+    def test_table_is_pruned_at_limit(self):
+        from core.models import Notification
+        from core import notifications
+
+        original = notifications.MAX_ROWS
+        notifications.MAX_ROWS = 10
+        try:
+            for i in range(25):
+                notifications.notify(Notification.KIND_MESSAGE, f"Xabar {i}")
+            self.assertLessEqual(Notification.objects.count(), 10)
+            # Eng yangilari qolishi kerak, eng eskilari o'chishi
+            self.assertTrue(Notification.objects.filter(title="Xabar 24").exists())
+            self.assertFalse(Notification.objects.filter(title="Xabar 0").exists())
+        finally:
+            notifications.MAX_ROWS = original
+
+    def test_notify_never_raises(self):
+        """
+        Bildirishnoma yaratishdagi har qanday nosozlik yutilishi shart.
+
+        Aks holda kontakt formasi yoki 500 sahifasi mehmonga bo'sh ekran
+        ko'rsatib qo'yadi.
+        """
+        from unittest.mock import patch
+
+        from core.models import Notification
+        from core.notifications import notify
+
+        with patch(
+            "core.models.Notification.objects.create", side_effect=RuntimeError("baza yo'q")
+        ):
+            self.assertIsNone(notify(Notification.KIND_MESSAGE, "Sinov"))
+
+    def test_describe_request_survives_bad_host(self):
+        """Noto'g'ri `Host` sarlavhasi bildirishnomani yiqitmasligi kerak."""
+        from django.core.exceptions import DisallowedHost
+        from unittest.mock import Mock
+
+        from core.notifications import describe_request
+
+        request = Mock()
+        request.META = {}
+        request.get_host.side_effect = DisallowedHost("yomon host")
+        self.assertIn("IP", describe_request(request))
+
+
+class TelegramSafetyTests(TestCase):
+    """Telegram moduli maxfiy ma'lumotni sizdirmasligi kerak."""
+
+    def test_token_is_removed_from_log_text(self):
+        from django.test import override_settings
+
+        from core import telegram
+
+        token = "1234567890:AAHsecret-token-value"
+        with override_settings(TELEGRAM_BOT_TOKEN=token):
+            scrubbed = telegram._scrub(f"xato: https://api.telegram.org/bot{token}/send")
+        self.assertNotIn(token, scrubbed)
+        self.assertIn("***TOKEN***", scrubbed)
+
+    def test_html_is_escaped_in_message(self):
+        """Mehmon yozgan matn Telegram formatlashini buzmasligi kerak."""
+        from core import telegram
+        from core.models import Notification
+
+        text = telegram.format_notification(
+            Notification.KIND_MESSAGE, "<b>qalbaki</b>", "<script>x</script>"
+        )
+        self.assertNotIn("<script>", text)
+        self.assertIn("&lt;script&gt;", text)
+
+
+class AdminLoginThrottleTests(TestCase):
+    """Admin parolini cheksiz tanlab bo'lmasligi kerak."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_repeated_failures_are_blocked(self):
+        from core.admin_site import LOGIN_MAX_ATTEMPTS
+
+        url = reverse("admin:login")
+        for _ in range(LOGIN_MAX_ATTEMPTS):
+            self.client.post(url, {"username": "admin", "password": "xato"})
+
+        response = self.client.post(url, {"username": "admin", "password": "xato"})
+        self.assertEqual(response.status_code, 429)
+
+    def test_successful_login_resets_counter(self):
+        from django.contrib.auth import get_user_model
+
+        from core.admin_site import LOGIN_MAX_ATTEMPTS
+
+        get_user_model().objects.create_superuser("egasi", "e@e.uz", "juda-kuchli-parol-1")
+        url = reverse("admin:login")
+
+        for _ in range(LOGIN_MAX_ATTEMPTS - 1):
+            self.client.post(url, {"username": "egasi", "password": "xato"})
+
+        self.client.post(url, {"username": "egasi", "password": "juda-kuchli-parol-1"})
+        # Hisob nolga qaytgani uchun keyingi urinish bloklanmaydi
+        response = self.client.post(url, {"username": "egasi", "password": "xato"})
+        self.assertNotEqual(response.status_code, 429)
+
+
+class ResumeDownloadTests(TestCase):
+    """CV havolasi kuzatilishi, lekin spam bildirishnoma yasamasligi kerak."""
+
+    def setUp(self):
+        from django.core.cache import cache
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from core.models import Notification
+
+        cache.clear()
+        Notification.objects.all().delete()
+        self.profile = Profile.objects.create(
+            full_name="Sinov", headline_uz="Dasturchi", bio_uz="matn", email="a@b.uz"
+        )
+        self.profile.resume.save(
+            "cv.pdf", SimpleUploadedFile("cv.pdf", b"%PDF-1.4 sinov"), save=True
+        )
+
+    def tearDown(self):
+        self.profile.resume.delete(save=False)
+
+    def test_download_is_recorded_once_per_window(self):
+        from core.models import Notification
+
+        for _ in range(5):
+            response = self.client.get(reverse("core:resume_download"))
+            self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(
+            Notification.objects.filter(kind=Notification.KIND_RESUME).count(), 1
+        )
+
+    def test_missing_resume_returns_404(self):
+        self.profile.resume.delete(save=True)
+        self.assertEqual(self.client.get(reverse("core:resume_download")).status_code, 404)

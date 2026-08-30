@@ -10,19 +10,106 @@ Ulanishi `config/settings.py` dagi INSTALLED_APPS orqali:
 `django.contrib.admin` o'rniga `core.apps.PortfolioAdminConfig` turadi.
 """
 
+import logging
 from datetime import timedelta
 
 from django.contrib.admin import AdminSite
+from django.core.cache import cache
 from django.db.models import Sum
-from django.template.response import TemplateResponse
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
+# Admin login'ga qancha marta noto'g'ri urinish mumkin va qancha vaqt blok.
+# Django'ning o'zida bunday himoya YO'Q: `/admin/` sahifasi ochiq turadi va
+# parolni cheksiz marta sinab ko'rsa bo'ladi. Portfolio saytining admin'i —
+# butun kontentga kalit, shuning uchun oddiy chegara qo'yamiz.
+LOGIN_MAX_ATTEMPTS = 8
+LOGIN_LOCKOUT_SECONDS = 900  # 15 daqiqa
 
 
 class PortfolioAdminSite(AdminSite):
     site_header = "Portfolio boshqaruvi"
     site_title = "Portfolio admin"
     index_title = "Boshqaruv paneli"
+
+    # ------------------------------------------------------------ login himoya
+
+    def login(self, request, extra_context=None):
+        """
+        Admin login sahifasi — parol tanlashga urinishlar cheklangan.
+
+        Hisob IP bo'yicha yuritiladi. Bu mukammal himoya emas (botnet turli
+        IP'dan urinishi mumkin), lekin eng keng tarqalgan holatni — bitta
+        manbadan lug'at bo'yicha parol tanlashni — to'xtatadi.
+        """
+        key = self._lockout_key(request)
+        if key and cache.get(key, 0) >= LOGIN_MAX_ATTEMPTS:
+            return self._locked_response(request)
+
+        response = super().login(request, extra_context)
+
+        if request.method == "POST" and key:
+            if request.user.is_authenticated:
+                # Muvaffaqiyatli kirdi — hisob nolga qaytadi
+                cache.delete(key)
+            else:
+                self._count_failure(request, key)
+
+        return response
+
+    def _lockout_key(self, request):
+        from .notifications import client_ip
+
+        try:
+            return f"admin-login:{client_ip(request)}"
+        except Exception:
+            return ""
+
+    def _count_failure(self, request, key):
+        attempts = cache.get(key, 0)
+        # `window` faqat birinchi urinishda o'rnatiladi, shunda oyna suzib ketmaydi
+        if attempts == 0:
+            cache.set(key, 1, timeout=LOGIN_LOCKOUT_SECONDS)
+            attempts = 1
+        else:
+            try:
+                attempts = cache.incr(key)
+            except ValueError:
+                cache.set(key, 1, timeout=LOGIN_LOCKOUT_SECONDS)
+                attempts = 1
+
+        logger.warning("Admin login xato urinishi (%s/%s)", attempts, LOGIN_MAX_ATTEMPTS)
+
+        if attempts >= LOGIN_MAX_ATTEMPTS:
+            self._report_lockout(request, attempts)
+
+    def _report_lockout(self, request, attempts):
+        """Blokka tushgani haqida bildirishnoma — bu jiddiy signal."""
+        from .models import Notification
+        from .notifications import notify
+
+        notify(
+            Notification.KIND_SPAM,
+            "Admin parolini tanlashga urinish",
+            f"{attempts} ta noto'g'ri urinishdan keyin IP bloklandi "
+            f"({LOGIN_LOCKOUT_SECONDS // 60} daqiqaga).",
+            request=request,
+            quiet=False,
+        )
+
+    def _locked_response(self, request):
+        retry_minutes = LOGIN_LOCKOUT_SECONDS // 60
+        return HttpResponse(
+            "<h1>Juda ko'p urinish</h1>"
+            f"<p>Xavfsizlik uchun kirish {retry_minutes} daqiqaga to'xtatildi.</p>",
+            status=429,
+            content_type="text/html; charset=utf-8",
+        )
+
+    # ---------------------------------------------------------------- kontekst
 
     def each_context(self, request):
         """

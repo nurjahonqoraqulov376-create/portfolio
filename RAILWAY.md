@@ -38,7 +38,7 @@ Service → **Variables** bo'limiga quyidagilarni qo'ying:
 | Nomi | Qiymati | Izoh |
 |---|---|---|
 | `SECRET_KEY` | (pastdagi buyruq bilan yarating) | 50+ belgi, majburiy |
-| `DEBUG` | `False` | |
+| `DEBUG` | `False` | yozilmasa ham False (xavfsiz standart) |
 | `DATA_DIR` | `/app/data` | Volume mount path bilan bir xil |
 | `TRUST_PROXY_IP` | `True` | Railway proxy ortida turadi |
 | `SITE_DOMAIN` | `xxx.up.railway.app` | domen olingandan keyin |

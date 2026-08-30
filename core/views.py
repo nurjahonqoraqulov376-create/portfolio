@@ -63,22 +63,6 @@ class HomeView(TemplateView):
         return context
 
 
-def _client_ip(request):
-    """
-    Mijozning IP manzili.
-
-    `X-Forwarded-For` sarlavhasiga faqat sayt proxy ortida turgani aniq
-    bo'lgandagina ishonamiz (`TRUST_PROXY_IP`). Aks holda uni istalgan odam
-    o'zi yozib yuborib, har so'rovda yangi IP ko'rsatib rate limit'ni
-    chetlab o'tishi mumkin edi.
-    """
-    if getattr(settings, "TRUST_PROXY_IP", False):
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "") or "noma'lum"
-
-
 def _contact_rate_exceeded(request):
     """
     Bitta IP belgilangan vaqt oynasida nechta xabar yuborganini sanaydi.
@@ -92,7 +76,7 @@ def _contact_rate_exceeded(request):
     if limit <= 0:
         return False
 
-    key = f"contact-rate:{_client_ip(request)}"
+    key = f"contact-rate:{notifications.client_ip(request)}"
     hits = cache.get(key, 0)
     if hits >= limit:
         return True
@@ -121,7 +105,7 @@ def contact_view(request):
         return redirect("core:home")
 
     if _contact_rate_exceeded(request):
-        logger.warning("Kontakt formasi rate limit: %s", _client_ip(request))
+        logger.warning("Kontakt formasi rate limit: %s", notifications.client_ip(request))
         notifications.notify(
             Notification.KIND_SPAM,
             "Kontakt formasi limitga urildi",
@@ -212,7 +196,7 @@ def resume_download(request):
 
     # Bitta odam sahifani bir necha marta yangilasa, har safar bildirishnoma
     # kelmasin — bir soatlik oyna ichida IP bo'yicha bir marta.
-    key = f"resume-seen:{_client_ip(request)}"
+    key = f"resume-seen:{notifications.client_ip(request)}"
     if not cache.get(key):
         cache.set(key, 1, timeout=3600)
         notifications.notify(

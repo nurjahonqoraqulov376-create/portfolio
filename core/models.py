@@ -289,6 +289,11 @@ class Notification(models.Model):
     is_read = models.BooleanField("Ko'rilgan", default=False)
     created_at = models.DateTimeField("Vaqti", auto_now_add=True)
 
+    # Ketma-ket kelgan bir xil hodisalar yangi qator ochmaydi, shu sanoq
+    # oshadi. Bo'lmasa formaga urilgan bot bir daqiqada minglab qator yozib,
+    # bazani (Railway Volume'dagi SQLite) to'ldirib qo'yardi.
+    repeat_count = models.PositiveIntegerField("Takrorlangan", default=1)
+
     objects = NotificationQuerySet.as_manager()
 
     class Meta:

@@ -39,7 +39,11 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------- xavfsizlik
 
-DEBUG = env_bool("DEBUG", True)
+# Standart qiymat ataylab `False`. Agar produksiyada `DEBUG` o'zgaruvchisi
+# tasodifan yozilmay qolsa (yangi servis, o'chib ketgan Variable), sayt
+# xatolik sahifasida SECRET_KEY'ni, baza yo'lini va barcha muhit
+# o'zgaruvchilarini ochiq ko'rsatib qo'yardi. Lokalda `.env` da DEBUG=True.
+DEBUG = env_bool("DEBUG", False)
 
 SECRET_KEY = env("SECRET_KEY")
 
